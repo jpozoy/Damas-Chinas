@@ -4,6 +4,8 @@ import logger from 'morgan';
 import { Server} from 'socket.io';
 import { createServer } from 'node:http';
 
+import Juego from './juego.js';
+
 const port = 3000;
 
 //Inicializar express
@@ -12,6 +14,8 @@ const server = createServer(app);
 const io = new Server(server);
 
 io.on('connection', (socket) => {
+    
+    const juego = new Juego(2, 6, "Normal");
     console.log('a user connected');
 });
 
