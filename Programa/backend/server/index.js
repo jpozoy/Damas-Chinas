@@ -24,8 +24,10 @@ io.on('connection', (socket) => {
     // juego.getSaltos(8,6);
     // juego.getSaltos(7,5);
     // juego.getSaltos(10,6);
-    juego.testBoard();
-    let movimientos = juego.getSaltosRecursivos(15,7);
+    // juego.testBoard();
+    let movimiento = juego.buscarMovimientos2(8,9);
+    console.log(movimiento);
+    // let movimientos = juego.getSaltosRecursivos(15,7);
     console.log('a user connected');
 });
 

@@ -9,6 +9,17 @@ class Juego {
         this.areaJuego;
         this.setAreaJuego(numJugadores);
     }
+
+    //Definir desplazamientos para cada posición
+    static desplazamientos = {
+      1: { dx: 0, dy: -1 },
+      2: { dxPar: -1, dyPar: 0, dxImpar: -1, dyImpar: -1 },
+      3: { dxPar: -1, dyPar: 1, dxImpar: -1, dyImpar: 0 },
+      4: { dx: 0, dy: 1 },
+      5: { dxPar: 1, dyPar: 1, dxImpar: 1, dyImpar: 0 },
+      6: { dxPar: 1, dyPar: 0, dxImpar: 1, dyImpar: -1 }
+    };
+
     // Set area de juego
     setAreaJuego(numJugadores) {
         switch (numJugadores) {
@@ -98,210 +109,34 @@ class Juego {
                 break;
         }
     }
-    //Funcion para buscar movimientos posibles
-    buscarMovimientos(coordenadaI, coordenadaJ, jugador) {
-        let movimientos = [];
-        let areaJuego = this.areaJuego;
-        //Llamado a las funciones auxiliares para buscar movimientos
-        //Posición 1
-        this.movPosicion1(coordenadaI, coordenadaJ, movimientos);
-        //Posición 2
-        this.movPosicion2(coordenadaI, coordenadaJ, movimientos);
-        //Posición 3
-        this.movPosicion3(coordenadaI, coordenadaJ, movimientos);
-        //Posición 4
-        this.movPosicion4(coordenadaI, coordenadaJ, movimientos);
-        //Posición 5
-        this.movPosicion5(coordenadaI, coordenadaJ, movimientos);
-        //Posición 6
-        this.movPosicion6(coordenadaI, coordenadaJ, movimientos);
-        console.log(movimientos);
-        return movimientos;
+    // Movimiento genérico que unifica movPosicionX
+    movimiento(coordenadaI, coordenadaJ, posicion) {
+      const { dx, dy, dxPar, dyPar, dxImpar, dyImpar } = Juego.desplazamientos[posicion];
+      const dxFinal = dx ?? (coordenadaI % 2 === 0 ? dxPar : dxImpar);
+      const dyFinal = dy ?? (coordenadaI % 2 === 0 ? dyPar : dyImpar);
+      const nuevaI = coordenadaI + dxFinal;
+      const nuevaJ = coordenadaJ + dyFinal;
 
-    }
-    //Funciones auxiliares para buscar movimientos especificos en las posiciones adyacentes
-    //Posición 1
-    movPosicion1(coordenadaI, coordenadaJ) { 
-      let areaJuego = this.areaJuego;
-      if (areaJuego[coordenadaI][coordenadaJ - 1] <= 6) {
-        return true;
+      if (this.esMovimientoValido(nuevaI, nuevaJ)) {
+          return [nuevaI, nuevaJ];
       }
+      return null;
     }
-    //Posición 2
-    movPosicion2(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      //Identificar si es par o impar
-      switch(coordenadaI % 2) {
-        //Par
-        case 0:
-          if (areaJuego[coordenadaI - 1][coordenadaJ] == 0) {
-            listaMovimientos.push([coordenadaI - 1, coordenadaJ]);
-          }
-          break;
-        //Impar          
-        case 1:
-          if (areaJuego[coordenadaI - 1][coordenadaJ - 1] == 0) {
-            listaMovimientos.push([coordenadaI - 1, coordenadaJ - 1]);
-          } 
-          break;
-      }
+
+    esMovimientoValido(i, j) {
+        return i >= 0 && i < this.areaJuego.length && j >= 0 && j < this.areaJuego[i].length;
     }
-    //Posición 3
-    movPosicion3(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      //Identificar si es par o impar
-      switch(coordenadaI % 2) {
-        //Par
-        case 0:
-          if (areaJuego[coordenadaI - 1][coordenadaJ + 1] == 0) {
-            listaMovimientos.push([coordenadaI - 1, coordenadaJ + 1]);
-          }
-          break;
-        //Impar          
-        case 1:
-          if (areaJuego[coordenadaI - 1][coordenadaJ] == 0) {
-            listaMovimientos.push([coordenadaI - 1, coordenadaJ]);
-          }
-          break;
-      }
+
+    // Buscar movimientos con todas las posiciones
+    buscarMovimientos2(coordenadaI, coordenadaJ) {
+        const movimientos = [];
+        for (let i = 1; i <= 6; i++) {
+            const movimiento = this.movimiento(coordenadaI, coordenadaJ, i);
+            if (movimiento) movimientos.push(movimiento);
+        }
+        return movimientos;
     }
-    //Posición 4
-    movPosicion4(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      if (areaJuego[coordenadaI][coordenadaJ + 1] == 0) {
-        listaMovimientos.push([coordenadaI, coordenadaJ + 1]);
-      }
-    }
-    //Posición 5
-    movPosicion5(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      //Identificar si es par o impar
-      switch(coordenadaI % 2) {
-        //Par
-        case 0:
-          if (areaJuego[coordenadaI + 1][coordenadaJ + 1] == 0) {
-            listaMovimientos.push([coordenadaI + 1, coordenadaJ + 1]);
-          }
-          break;
-        //Impar          
-        case 1:
-          if (areaJuego[coordenadaI + 1][coordenadaJ] == 0) {
-            listaMovimientos.push([coordenadaI + 1, coordenadaJ]);
-          }
-          break;
-      }
-    }
-    //Posición 6
-    movPosicion6(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      //Identificar si es par o impar
-      switch(coordenadaI % 2) {
-        //Par
-        case 0:
-          if (areaJuego[coordenadaI + 1][coordenadaJ] == 0) {
-            listaMovimientos.push([coordenadaI + 1, coordenadaJ]);
-          }
-          break;
-        //Impar          
-        case 1:
-          if (areaJuego[coordenadaI + 1][coordenadaJ - 1] == 0) {
-            listaMovimientos.push([coordenadaI + 1, coordenadaJ - 1]);
-          }
-          break;
-      }
-    }
-    //Funciones para buscar movimientos realizando saltos
-    //--Verificar si hay fichas adyacentes
-    //Posición 1
-    movPosicion1(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      if (areaJuego[coordenadaI][coordenadaJ - 1] == 0) {
-        listaMovimientos.push([coordenadaI, coordenadaJ - 1]);
-      }
-    }
-    //Posición 2
-    movPosicion2(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      //Identificar si es par o impar
-      switch(coordenadaI % 2) {
-        //Par
-        case 0:
-          if (areaJuego[coordenadaI - 1][coordenadaJ] == 0) {
-            listaMovimientos.push([coordenadaI - 1, coordenadaJ]);
-          }
-          break;
-        //Impar          
-        case 1:
-          if (areaJuego[coordenadaI - 1][coordenadaJ - 1] == 0) {
-            listaMovimientos.push([coordenadaI - 1, coordenadaJ - 1]);
-          } 
-          break;
-      }
-    }
-    //Posición 3
-    movPosicion3(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      //Identificar si es par o impar
-      switch(coordenadaI % 2) {
-        //Par
-        case 0:
-          if (areaJuego[coordenadaI - 1][coordenadaJ + 1] == 0) {
-            listaMovimientos.push([coordenadaI - 1, coordenadaJ + 1]);
-          }
-          break;
-        //Impar          
-        case 1:
-          if (areaJuego[coordenadaI - 1][coordenadaJ] == 0) {
-            listaMovimientos.push([coordenadaI - 1, coordenadaJ]);
-          }
-          break;
-      }
-    }
-    //Posición 4
-    movPosicion4(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      if (areaJuego[coordenadaI][coordenadaJ + 1] == 0) {
-        listaMovimientos.push([coordenadaI, coordenadaJ + 1]);
-      }
-    }
-    //Posición 5
-    movPosicion5(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      //Identificar si es par o impar
-      switch(coordenadaI % 2) {
-        //Par
-        case 0:
-          if (areaJuego[coordenadaI + 1][coordenadaJ + 1] == 0) {
-            listaMovimientos.push([coordenadaI + 1, coordenadaJ + 1]);
-          }
-          break;
-        //Impar          
-        case 1:
-          if (areaJuego[coordenadaI + 1][coordenadaJ] == 0) {
-            listaMovimientos.push([coordenadaI + 1, coordenadaJ]);
-          }
-          break;
-      }
-    }
-    //Posición 6
-    movPosicion6(coordenadaI, coordenadaJ, listaMovimientos) { 
-      let areaJuego = this.areaJuego;
-      //Identificar si es par o impar
-      switch(coordenadaI % 2) {
-        //Par
-        case 0:
-          if (areaJuego[coordenadaI + 1][coordenadaJ] == 0) {
-            listaMovimientos.push([coordenadaI + 1, coordenadaJ]);
-          }
-          break;
-        //Impar          
-        case 1:
-          if (areaJuego[coordenadaI + 1][coordenadaJ - 1] == 0) {
-            listaMovimientos.push([coordenadaI + 1, coordenadaJ - 1]);
-          }
-          break;
-      }
-    }
+    
     // Función principal para obtener todos los saltos recursivos
     getSaltosRecursivos(coordenadaI, coordenadaJ) {
       let listaSaltos = [];
