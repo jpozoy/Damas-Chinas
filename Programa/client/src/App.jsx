@@ -1,12 +1,23 @@
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import Home from './components/Home';
+import CreateGame from './components/CreateGame';
+import JoinGame from './components/JoinGame';
+import Ranking from './components/Ranking';
 import io from 'socket.io-client';
 
 const socket = io('/');
 
 function App() {
   return (
-    <div>
-      <h1>Hello World</h1>
-    </div>
+    <Router>
+      <Routes>
+        <Route path="/" element={<Home />} />
+        <Route path="/create-game" element={<CreateGame />} />
+        <Route path="/join-game" element={<JoinGame />} />
+        <Route path="/ranking" element={<Ranking />} />
+      </Routes>
+    </Router>
   );
 }
 

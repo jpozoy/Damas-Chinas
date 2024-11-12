@@ -1,0 +1,11 @@
+IC 700 - LENGUAJES DE PROGRAMACIÓN
+    S2 - 2024
+
+Nombres                    | Carnet
+Jozafath Pérez Fernández    2023107460
+Jefferson Pozo Vallejos     2023059242
+    
+Proyecto:   4
+Fecha:      20/11/2024
+
+Estatus de la entrega: Exelente
