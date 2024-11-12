@@ -152,7 +152,7 @@ class Juego {
       if (!adyacente) return null;
 
       const [adjI, adjJ] = adyacente;
-      if (this.areaJuego[adjI][adjJ] !== 0) {  // Verifica si hay una ficha adyacente
+      if (this.areaJuego[adjI][adjJ] != 0) {  // Verifica si hay una ficha adyacente
           // Usa el desplazamiento específico de salto para la posición
           const { dx, dy } = Juego.desplazamientosSaltos[posicion];
           const saltoI = coordenadaI + dx;
@@ -173,7 +173,83 @@ class Juego {
         }
         return saltos;
     }
+    
+    // Función principal para obtener todos los saltos recursivos
+    getSaltosRecursivos(coordenadaI, coordenadaJ) {
+      let listaSaltos = [];
+      let saltosIniciales = this.buscarSaltos(coordenadaI, coordenadaJ);
+      
+      // Recorrer cada salto inicial
+      for (let salto of saltosIniciales) {
+        this.explorarSaltos(
+          salto[0],
+          salto[1],
+          [salto], // Comienza con el primer salto en la lista acumulada
+          listaSaltos,
+          new Set() // Usamos un conjunto vacío para las posiciones visitadas
+        );
+      }
 
+      console.log("Lista de todas las rutas:", listaSaltos);
+      return listaSaltos;
+    }
+
+    // Función recursiva para explorar saltos sin límite de profundidad
+    explorarSaltos(coordenadaI, coordenadaJ, saltosAcumulados, listaSaltos, visitados = new Set()) {
+      const posicion = `${coordenadaI},${coordenadaJ}`;
+      
+      // Verificar si la posición ya fue visitada en esta cadena de saltos
+      if (visitados.has(posicion)) return;
+      
+      // Agregar la posición actual a visitados
+      visitados.add(posicion);
+      
+      // Obtener los saltos desde la posición actual
+      let nuevosSaltos = this.filtrarSaltos(this.buscarSaltos(coordenadaI, coordenadaJ), visitados);
+
+      console.log("Posicion:", posicion);
+      console.log("Saltos disponibles:", nuevosSaltos);
+      console.log("Visitados:", Array.from(visitados));
+      
+      // Si no hay más saltos posibles, agregamos el camino actual a listaSaltos
+      if (nuevosSaltos.length === 0) {
+        console.log("Ruta completa encontrada:", saltosAcumulados);
+        listaSaltos.push([...saltosAcumulados]);  // Guardamos una copia del camino actual
+        return;
+      }
+    
+      // Recursión para cada salto posible
+      for (let salto of nuevosSaltos) {
+        const saltoPosicion = `${salto[0]},${salto[1]}`;
+        
+        // Solo exploramos el salto si no ha sido visitado antes
+        if (!visitados.has(saltoPosicion)) {
+          this.explorarSaltos(
+            salto[0], salto[1],
+            [...saltosAcumulados, salto],  // Agregamos el salto actual a la cadena
+            listaSaltos,
+            new Set(visitados)  // Pasamos una copia del conjunto de visitados
+          );
+        }
+      }
+    
+      console.log("Saltos acumulados:", saltosAcumulados);
+    }
+    //Función para filtrar el salto por donde se vino
+    filtrarSaltos(listaSaltos, setSaltos) {
+      console.log("Saltos sin filtrar:", listaSaltos);
+      console.log("Saltos visitados:", Array.from(setSaltos));
+      let listaFiltrada = [];
+      for (let salto of listaSaltos) {
+        let saltoSTR = `${salto[0]},${salto[1]}`;
+        console.log("Salto:", salto);
+        if (!setSaltos.has(saltoSTR)) {  // Verifica si el salto NO está en el set
+          listaFiltrada.push(salto);
+        }
+      }
+      console.log("Saltos filtrados:", listaFiltrada);
+      return listaFiltrada;
+    }
 
     //Funcion para crear cambios en el tablero
     testBoard() {
