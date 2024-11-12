@@ -21,9 +21,11 @@ io.on('connection', (socket) => {
     // juego.buscarMovimientos(3, 6, 1);
     // juego.buscarMovimientos(13, 7, 1);
     // juego.buscarMovimientos(10, 6, 1);
-    juego.getSaltos(8,6);
-    juego.getSaltos(7,5);
-    juego.getSaltos(10,6);
+    // juego.getSaltos(8,6);
+    // juego.getSaltos(7,5);
+    // juego.getSaltos(10,6);
+    juego.testBoard();
+    let movimientos = juego.getSaltosRecursivos(15,7);
     console.log('a user connected');
 });
 

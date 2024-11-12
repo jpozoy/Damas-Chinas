@@ -302,6 +302,82 @@ class Juego {
           break;
       }
     }
+    // Función principal para obtener todos los saltos recursivos
+    getSaltosRecursivos(coordenadaI, coordenadaJ) {
+      let listaSaltos = [];
+      let saltosIniciales = this.getSaltos(coordenadaI, coordenadaJ);
+      
+      // Recorrer cada salto inicial
+      for (let salto of saltosIniciales) {
+        this.explorarSaltos(
+          salto[0],
+          salto[1],
+          [salto], // Comienza con el primer salto en la lista acumulada
+          listaSaltos,
+          new Set() // Usamos un conjunto vacío para las posiciones visitadas
+        );
+      }
+
+      console.log("Lista de todas las rutas:", listaSaltos);
+      return listaSaltos;
+    }
+
+    // Función recursiva para explorar saltos sin límite de profundidad
+    explorarSaltos(coordenadaI, coordenadaJ, saltosAcumulados, listaSaltos, visitados = new Set()) {
+      const posicion = `${coordenadaI},${coordenadaJ}`;
+      
+      // Verificar si la posición ya fue visitada en esta cadena de saltos
+      if (visitados.has(posicion)) return;
+      
+      // Agregar la posición actual a visitados
+      visitados.add(posicion);
+      
+      // Obtener los saltos desde la posición actual
+      let nuevosSaltos = this.filtrarSaltos(this.getSaltos(coordenadaI, coordenadaJ), visitados);
+
+      console.log("Posicion:", posicion);
+      console.log("Saltos disponibles:", nuevosSaltos);
+      console.log("Visitados:", Array.from(visitados));
+      
+      // Si no hay más saltos posibles, agregamos el camino actual a listaSaltos
+      if (nuevosSaltos.length === 0) {
+        console.log("Ruta completa encontrada:", saltosAcumulados);
+        listaSaltos.push([...saltosAcumulados]);  // Guardamos una copia del camino actual
+        return;
+      }
+    
+      // Recursión para cada salto posible
+      for (let salto of nuevosSaltos) {
+        const saltoPosicion = `${salto[0]},${salto[1]}`;
+        
+        // Solo exploramos el salto si no ha sido visitado antes
+        if (!visitados.has(saltoPosicion)) {
+          this.explorarSaltos(
+            salto[0], salto[1],
+            [...saltosAcumulados, salto],  // Agregamos el salto actual a la cadena
+            listaSaltos,
+            new Set(visitados)  // Pasamos una copia del conjunto de visitados
+          );
+        }
+      }
+    
+      console.log("Saltos acumulados:", saltosAcumulados);
+    }
+    //Función para filtrar el salto por donde se vino
+    filtrarSaltos(listaSaltos, setSaltos) {
+      console.log("Saltos sin filtrar:", listaSaltos);
+      console.log("Saltos visitados:", Array.from(setSaltos));
+      let listaFiltrada = [];
+      for (let salto of listaSaltos) {
+        let saltoSTR = `${salto[0]},${salto[1]}`;
+        console.log("Salto:", salto);
+        if (!setSaltos.has(saltoSTR)) {  // Verifica si el salto NO está en el set
+          listaFiltrada.push(salto);
+        }
+      }
+      console.log("Saltos filtrados:", listaFiltrada);
+      return listaFiltrada;
+    }
 
     // Funcion para obtener todos los saltos disponibles
     getSaltos(coordenadaI, coordenadaJ) {
@@ -324,7 +400,6 @@ class Juego {
       if (this.saltoPosicion6(coordenadaI, coordenadaJ)!= null) {
         listaSaltos.push(this.saltoPosicion6(coordenadaI, coordenadaJ));
       }
-      console.log(listaSaltos);
       return listaSaltos;
     }
     //Funciones para obtener saltos disponibles por cada posición
@@ -349,7 +424,7 @@ class Juego {
       let casillaAdyacente = this.getAdyacente2(coordenadaI, coordenadaJ);
       //Verificar si hay una ficha adayacente
       if(casillaAdyacente <= 6 && casillaAdyacente != 0) {
-        if(areaJuego[coordenadaI][coordenadaJ - 2] == 0) {
+        if(areaJuego[coordenadaI - 2][coordenadaJ - 1] == 0) {
           casillaSalto = [coordenadaI - 2, coordenadaJ - 1];
           return casillaSalto;
         }
@@ -363,7 +438,7 @@ class Juego {
       let casillaAdyacente = this.getAdyacente3(coordenadaI, coordenadaJ);
       //Verificar si hay una ficha adayacente
       if(casillaAdyacente <= 6 && casillaAdyacente != 0) {
-        if(areaJuego[coordenadaI][coordenadaJ - 2] == 0) {
+        if(areaJuego[coordenadaI - 2][coordenadaJ + 1] == 0) {
           casillaSalto = [coordenadaI - 2, coordenadaJ + 1];
           return casillaSalto;
         }
@@ -377,7 +452,7 @@ class Juego {
       let casillaAdyacente = this.getAdyacente4(coordenadaI, coordenadaJ);
       //Verificar si hay una ficha adayacente
       if(casillaAdyacente <= 6 && casillaAdyacente != 0) {
-        if(areaJuego[coordenadaI][coordenadaJ - 2] == 0) {
+        if(areaJuego[coordenadaI][coordenadaJ + 2] == 0) {
           casillaSalto = [coordenadaI, coordenadaJ + 2];
           return casillaSalto;
         }
@@ -391,7 +466,7 @@ class Juego {
       let casillaAdyacente = this.getAdyacente5(coordenadaI, coordenadaJ);
       //Verificar si hay una ficha adayacente
       if(casillaAdyacente <= 6 && casillaAdyacente != 0) {
-        if(areaJuego[coordenadaI][coordenadaJ - 2] == 0) {
+        if(areaJuego[coordenadaI + 2][coordenadaJ + 1] == 0) {
           casillaSalto = [coordenadaI + 2, coordenadaJ + 1];
           return casillaSalto;
         }
@@ -403,16 +478,33 @@ class Juego {
       let areaJuego = this.areaJuego;
       let casillaSalto;
       let casillaAdyacente = this.getAdyacente6(coordenadaI, coordenadaJ);
+      //Verificación para no salirse de la matriz
+      if(!this.checkMovSalto(coordenadaI, coordenadaJ)){
+        return null;
+      }
       //Verificar si hay una ficha adayacente
       if(casillaAdyacente <= 6 && casillaAdyacente != 0) {
-        if(areaJuego[coordenadaI][coordenadaJ - 2] == 0) {
+        if(areaJuego[coordenadaI + 2][coordenadaJ - 1] == 0) {
           casillaSalto = [coordenadaI + 2, coordenadaJ - 1];
           return casillaSalto;
         }
       }
       return null;
     }
-        // Funciones para obtener casillas adyacentes
+    checkMovSalto(coordenadaI, coordenadaJ) {
+      // Listas de coordenadas prohibidas
+      const coordenadasProhibidasI = [0, 1, 15, 16];
+      const coordenadasProhibidasJ = [0, 1, 11, 12];
+      
+      // Verificar si coordenadaI o coordenadaJ están en las listas de prohibición
+      if (coordenadasProhibidasI.includes(coordenadaI) || coordenadasProhibidasJ.includes(coordenadaJ)) {
+        return false; // Movimiento ilegal
+      }
+      
+      return true; // Movimiento legal
+    }
+
+    // Funciones para obtener casillas adyacentes
 
     // Casilla adyacente en posición 1
     getAdyacente1(coordenadaI, coordenadaJ){
@@ -501,7 +593,30 @@ class Juego {
           return casilla; 
       }
       return false
-    }        
+    }
+    //Funcion para crear cambios en el tablero
+    testBoard() {
+      this.areaJuego = [
+        ["_","_","_","_","_","_","1","_","_","_","_","_","_"], 
+      ["_","_","_","_","_","_","0","1","_","_","_","_","_"], 
+        ["_","_","_","_","_","1","1","1","_","_","_","_","_"], 
+      ["_","_","_","_","_","0","0","1","1","_","_","_","_"],
+        ["0","0","0","0","0","1","0","0","0","0","0","0","0"],
+      ["_","0","0","0","0","0","1","0","0","0","0","0","0"], //17
+        ["_","0","0","0","0","0","1","0","0","0","0","0","_"],
+      ["_","_","0","0","0","0","0","0","0","0","0","0","_"],
+        ["_","_","0","0","0","0","0","0","0","0","0","_","_"], // Mitad
+      ["_","_","0","0","0","0","0","0","0","0","0","0","_"],
+        ["_","0","0","0","0","0","0","2","0","0","0","0","_"],
+      ["_","0","0","0","0","0","0","0","0","0","0","0","0"],
+        ["0","0","0","0","0","0","0","2","1","0","0","0","0"],//17
+      ["_","_","_","_","_","2","0","0","0","_","_","_","_"],
+        ["_","_","_","_","_","2","2","2","_","_","_","_","_"],
+      ["_","_","_","_","_","_","2","2","_","_","_","_","_"],
+        ["_","_","_","_","_","_","2","_","_","_","_","_","_"]
+      ];
+    }
+
 }
 
 export default Juego;
