@@ -1,5 +1,5 @@
 // archivo administrador.js
-import Juego from './juego';
+import Juego from './juego.js';
 
 class Administrador {
   constructor(id, numJugadores, modoJuego, tiempoLimite) {

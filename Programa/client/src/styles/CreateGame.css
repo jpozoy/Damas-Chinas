@@ -1,0 +1,55 @@
+/* archivo CreateGame.css */
+.tablero {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .fila {
+    display: flex;
+  }
+  
+  .celda {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 1px solid #000;
+  }
+  
+  .celda-0 {
+    background-color: white;
+  }
+  
+  .celda-1 {
+    background-color: red;
+  }
+  
+  .celda-2 {
+    background-color: blue;
+  }
+  
+  .celda-3 {
+    background-color: green;
+  }
+  
+  .celda-4 {
+    background-color: yellow;
+  }
+  
+  .celda-5 {
+    background-color: purple;
+  }
+  
+  .celda-6 {
+    background-color: orange;
+  }
+  
+  .celda-_ {
+    visibility: hidden;
+  }
+  
+  .movimiento-posible {
+    background-color: black;
+  }
