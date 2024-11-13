@@ -206,10 +206,6 @@ class Juego {
       
       // Obtener los saltos desde la posición actual
       let nuevosSaltos = this.filtrarSaltos(this.buscarSaltos(coordenadaI, coordenadaJ), visitados);
-
-      console.log("Posicion:", posicion);
-      console.log("Saltos disponibles:", nuevosSaltos);
-      console.log("Visitados:", Array.from(visitados));
       
       // Si no hay más saltos posibles, agregamos el camino actual a listaSaltos
       if (nuevosSaltos.length === 0) {
