@@ -189,8 +189,6 @@ class Juego {
           new Set() // Usamos un conjunto vacío para las posiciones visitadas
         );
       }
-
-      console.log("Lista de todas las rutas:", listaSaltos);
       return listaSaltos;
     }
 
@@ -209,7 +207,6 @@ class Juego {
       
       // Si no hay más saltos posibles, agregamos el camino actual a listaSaltos
       if (nuevosSaltos.length === 0) {
-        console.log("Ruta completa encontrada:", saltosAcumulados);
         listaSaltos.push([...saltosAcumulados]);  // Guardamos una copia del camino actual
         return;
       }
@@ -228,22 +225,16 @@ class Juego {
           );
         }
       }
-    
-      console.log("Saltos acumulados:", saltosAcumulados);
     }
     //Función para filtrar el salto por donde se vino
     filtrarSaltos(listaSaltos, setSaltos) {
-      console.log("Saltos sin filtrar:", listaSaltos);
-      console.log("Saltos visitados:", Array.from(setSaltos));
       let listaFiltrada = [];
       for (let salto of listaSaltos) {
         let saltoSTR = `${salto[0]},${salto[1]}`;
-        console.log("Salto:", salto);
         if (!setSaltos.has(saltoSTR)) {  // Verifica si el salto NO está en el set
           listaFiltrada.push(salto);
         }
       }
-      console.log("Saltos filtrados:", listaFiltrada);
       return listaFiltrada;
     }
 
