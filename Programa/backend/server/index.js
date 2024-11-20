@@ -134,6 +134,16 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('obtenerTablero', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      const tablero = partida.obtenerTablero();
+      callback({ tablero });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log('Cliente desconectado:', socket.id);
     delete usuarios[socket.id];

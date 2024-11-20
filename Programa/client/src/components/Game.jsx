@@ -50,7 +50,34 @@ function Game() {
       console.log('Partida completa, redirigiendo al área de juego...');
     });
 
+    // Configuración del intervalo para obtener jugadores y tablero
+    const intervalo = setInterval(() => {
+      // Emitir el evento 'obtenerJugadores' y manejar la respuesta
+      socket.emit('obtenerJugadores', idPartida, (data) => {
+        if (data.error) {
+          console.error(data.error);
+        } else {
+          setJugadores(data.jugadores);
+        }
+      });
+
+      // Emitir el evento 'obtenerTablero' de forma periódica
+      socket.emit('obtenerTablero', idPartida, (data) => {
+        if (data.error) {
+          console.error(data.error);
+        } else {
+          console.log('Tablero recibido:', data.tablero);
+          setTablero(data.tablero);
+        }
+      });
+
+      // Verificar si la partida está completa
+      verificarPartidaCompleta();
+    }, 500);  // Intervalo de 500ms
+
+    // Limpiar cuando el componente se desmonte
     return () => {
+      clearInterval(intervalo);  // Detener el intervalo
       socket.off('jugadoresActualizados');
       socket.off('tableroActualizado');
       socket.off('turnoActualizado');
