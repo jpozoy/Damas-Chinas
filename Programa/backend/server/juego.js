@@ -246,6 +246,18 @@ class Juego {
       return listaFiltrada;
     }
 
+    obtenerMovimientosYsaltos(coordenadaI, coordenadaJ) {
+      const movimientos = this.buscarMovimientos(coordenadaI, coordenadaJ);
+      const movimientosValidos = this.filtrarMovimientosValidos(movimientos);
+  
+      const saltos = this.getSaltosRecursivos(coordenadaI, coordenadaJ);
+  
+      return {
+        movimientosValidos,
+        saltos
+      };
+    }
+
     //Función para mover una ficha, recibe la posición inicial y la posición destino
     moverFicha(coordInicial, posicionDestino) {
       const [coordI, coordJ] = coordInicial;

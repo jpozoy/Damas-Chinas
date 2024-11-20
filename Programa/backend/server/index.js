@@ -23,10 +23,12 @@ io.on('connection', (socket) => {
 
   
   // Pruebas de Pozo no borrar
-  // const juego = new Juego(2, 6, "Normal");
+  const juego = new Juego(2, 6, "Normal");
   // let movimiento = juego.buscarMovimientos(8,6);
-  // juego.testBoard();
-  // juego.imprimirTablero();
+  juego.testBoard();
+  juego.imprimirTablero();
+  let movimientosComplentos = juego.obtenerMovimientosYsaltos(15,7);
+  console.log("movimientos completos",movimientosComplentos.saltos);
   // let movimientos = juego.buscarMovimientos(14,7);
   // console.log("movimientos",movimientos);
   // let movimientosFiltrados = juego.filtrarMovimientosValidos(movimientos);
