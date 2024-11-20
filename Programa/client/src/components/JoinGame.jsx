@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import io from 'socket.io-client';
 import { FaSync } from 'react-icons/fa';
 
@@ -8,14 +8,17 @@ const socket = io('/');
 function JoinGame() {
   const [partidas, setPartidas] = useState([]);
   const [nickname, setNickname] = useState('');
+  const [avatar, setAvatar] = useState('');
   const navigate = useNavigate();
   const location = useLocation();
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const nicknameParam = params.get('nickname');
+    const avatarParam = params.get('avatar');
     if (nicknameParam) {
       setNickname(nicknameParam);
+      setAvatar(avatarParam);
     }
 
     socket.on('partidasActualizadas', (data) => {
@@ -33,7 +36,7 @@ function JoinGame() {
 
   const handleJoinGame = (idPartida) => {
     socket.emit('unirsePartida', { idPartida, nickname });
-    navigate(`/waiting-room/${idPartida}`);
+    navigate(`/waiting-room/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
   };
 
   const handleRefresh = () => {
@@ -45,16 +48,25 @@ function JoinGame() {
       {/* Contenedor Principal */}
       <div className="flex flex-col items-center justify-center h-full space-y-8 bg-gray-900/60 text-black">
 
+        {/* Información del Usuario */}
+        <div className="absolute top-8 right-12 flex items-center space-x-4 bg-white p-2 rounded-lg shadow-lg">
+          <img src={avatar} alt="avatar" className="w-16 h-16 rounded-full border-2" />
+          <span className="text-black font-bold text-xl">{nickname}</span>
+        </div>
+        
+        {/* Botón de Regresar al Menú */}
+        <Link to={`/?nickname=${nickname}&avatar=${avatar}`} className="absolute top-4 left-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+          Regresar al Menú
+        </Link>
+
         {/* Logo Principal */}
         <div className="bg-gray-100 rounded-lg p-8 w-1/3 shadow-lg text-center">
           <h2 className="text-4xl font-bold">Unirse a Juego</h2>
           <div className="mb-4">
-            <label className="block mb-2">
-              Nickname:
+            <label className="block mb-4 text-left">
+              Buscar partida:
               <input
                 type="text"
-                value={nickname}
-                onChange={(e) => setNickname(e.target.value)}
                 className="mt-2 w-full p-3 rounded-md text-black border border-black focus:outline-none"
               />
             </label>
