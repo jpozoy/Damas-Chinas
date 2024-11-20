@@ -47,6 +47,12 @@ class Juego {
       ]
     };
 
+    static opuestos = {
+      2: {1:4, 2:1},
+      3: {1:3, 2:5, 3:1},
+      4: {1:3, 2:5, 3:6, 4:2},
+      6: {1:4, 2:5, 3:6, 4:1, 5:2, 6:3}
+    };
     // Desplazamientos específicos para cada posición de salto
     static desplazamientosSaltos = {
       1: { dx: 0, dy: -2 },
@@ -294,9 +300,11 @@ class Juego {
     }
 
     //Verificar si hay un ganador
+    // LLamar cada vez que se mueva una ficha, recibe el jugador que movio para verificar 
+    // si realizo un movimiento ganador
     verificarGanador(jugador) {
-      const posicionesDestino = Juego.posicionesPartida[jugador];
-      return posicionesDestino.every(({ i, j }) => this.areaJuego[x][y] === String(jugador));
+      const posicionesDestino = Juego.posicionesPartida[Juego.opuestos[this.numJugadores][jugador]];
+      return posicionesDestino.every(({ i, j }) => this.areaJuego[i][j] === String(jugador));
     }
     
 
@@ -304,9 +312,9 @@ class Juego {
     testBoard() {
       this.areaJuego = [
         ["_","_","_","_","_","_","1","_","_","_","_","_","_"], 
-      ["_","_","_","_","_","_","0","1","_","_","_","_","_"], 
+      ["_","_","_","_","_","_","1","1","_","_","_","_","_"], 
         ["_","_","_","_","_","1","1","1","_","_","_","_","_"], 
-      ["_","_","_","_","_","0","0","1","1","_","_","_","_"],
+      ["_","_","_","_","_","1","1","1","1","_","_","_","_"],
         ["0","0","0","0","0","1","0","0","0","0","0","0","0"],
       ["_","0","0","0","0","0","1","0","0","0","0","0","0"], //17
         ["_","0","0","0","0","0","1","0","0","0","0","0","_"],

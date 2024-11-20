@@ -63,7 +63,13 @@ io.on('connection', (socket) => {
 
   socket.on('solicitarPartidas', () => {
     const partidasDisponibles = Object.values(partidas).filter(partida => partida.jugadores.length < partida.juego.numJugadores);
-    socket.emit('partidasActualizadas', partidasDisponibles);
+    const partidasConInfo = partidasDisponibles.map(partida => ({
+      id: partida.juego.id,
+      creador: partida.jugadores[0].nickname,
+      jugadores: partida.jugadores,
+      cantidadJugadores: partida.juego.numJugadores
+    }));
+    socket.emit('partidasActualizadas', partidasConInfo);
   });
 
   socket.on('cancelarPartida', ({ idPartida }) => {
