@@ -10,6 +10,7 @@ function WaitingRoom() {
   const location = useLocation();
   const [jugadores, setJugadores] = useState([]);
   const [creador, setCreador] = useState('');
+  const [cantidadJugadores, setCantidadJugadores] = useState(0);
   const [nickname, setNickname] = useState('');
   const [avatar, setAvatar] = useState('');
   const [timeLeft, setTimeLeft] = useState(180); // 3 minutos en segundos
@@ -22,21 +23,33 @@ function WaitingRoom() {
       setNickname(nicknameParam);
       setAvatar(avatarParam);
     }
-
+  
+    console.log('Conectando al servidor de sockets...');
+    socket.on('connect', () => {
+      console.log('Conectado al servidor de sockets');
+    });
+  
     socket.on('jugadoresActualizados', (data) => {
-      setJugadores(data);
+      console.log('Jugadores actualizados recibidos:', data);
+      // Convertir el objeto en un array
+      const jugadoresArray = Object.keys(data).filter(key => !isNaN(key)).map(key => data[key]);
+      setJugadores(jugadoresArray);
     });
-
+  
     socket.on('partidaCompleta', (data) => {
+      console.log('Partida completa recibida:', data);
       // Redirigir al área de juego cuando la partida esté completa
-      console.log('Partida completa, redirigiendo al área de juego...');
+      navigate(`/game/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
     });
-
+  
     // Obtener el creador de la partida
     socket.emit('obtenerCreador', idPartida, (data) => {
+      console.log('Creador de la partida recibido:', data);
+      console.log('Jugadores:', data.cantidadJugadores);
       setCreador(data.creador);
+      setCantidadJugadores(data.cantidadJugadores);
     });
-
+  
     // Contador de espera
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
@@ -47,13 +60,13 @@ function WaitingRoom() {
         return prevTime - 1;
       });
     }, 1000);
-
+  
     return () => {
       socket.off('jugadoresActualizados');
       socket.off('partidaCompleta');
       clearInterval(timer);
     };
-  }, [idPartida, location]);
+  }, [idPartida, location, navigate, nickname, avatar]);
 
   const handleCancel = () => {
     socket.emit('cancelarPartida', idPartida);
@@ -81,6 +94,7 @@ function WaitingRoom() {
           <h2 className="text-4xl font-bold">Sala de Espera</h2>
           <p className="text-lg text-gray-500 mt-2">Esperando a que se unan más jugadores...</p>
           <p className="text-lg text-gray-500 mt-2">Tiempo restante: {Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</p>
+          <p className="text-lg text-gray-500 mt-2">Jugadores: {console.log('Jugadores length:', jugadores.length)}{jugadores.length}/{cantidadJugadores}</p>
           <ul className="mt-4">
             {jugadores.map((jugador, index) => (
               <li key={index} className="mb-2 p-2 bg-white rounded shadow">
