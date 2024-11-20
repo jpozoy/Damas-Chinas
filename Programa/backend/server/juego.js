@@ -146,13 +146,21 @@ class Juego {
         }
         return movimientos;
     }
+
+    filtrarMovimientosValidos(movimientos) {
+      return movimientos.filter(([i, j]) => this.areaJuego[i][j] == 0);
+    }
+
     // Función de salto usando los desplazamientos específicos
     salto(coordenadaI, coordenadaJ, posicion) {
       const adyacente = this.movimiento(coordenadaI, coordenadaJ, posicion);
       if (!adyacente) return null;
 
+      // Lista de fichas para verificar si hay una adyacente
+      const fichas = ["1", "2", "3", "4", "5", "6"];
+
       const [adjI, adjJ] = adyacente;
-      if (this.areaJuego[adjI][adjJ] != 0) {  // Verifica si hay una ficha adyacente
+      if (fichas.includes(this.areaJuego[adjI][adjJ])) {  // Verifica si hay una ficha adyacente
           // Usa el desplazamiento específico de salto para la posición
           const { dx, dy } = Juego.desplazamientosSaltos[posicion];
           const saltoI = coordenadaI + dx;
@@ -238,6 +246,14 @@ class Juego {
       return listaFiltrada;
     }
 
+    //Función para mover una ficha, recibe la posición inicial y la posición destino
+    moverFicha(coordInicial, posicionDestino) {
+      const [coordI, coordJ] = coordInicial;
+      const [destinoI, destinoJ] = posicionDestino;
+      this.areaJuego[destinoI][destinoJ] = this.areaJuego[coordI][coordJ];
+      this.areaJuego[coordI][coordJ] = 0;
+    }
+
     //Funcion para crear cambios en el tablero
     testBoard() {
       this.areaJuego = [
@@ -260,6 +276,12 @@ class Juego {
         ["_","_","_","_","_","_","2","_","_","_","_","_","_"]
       ];
     }
+    imprimirTablero() {
+      for (let fila of this.areaJuego) {
+        console.log(fila.join(' '));
+      }
+    }
+    
 
 }
 

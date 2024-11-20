@@ -25,9 +25,17 @@ io.on('connection', (socket) => {
   // const juego = new Juego(2, 6, "Normal");
   // let movimiento = juego.buscarMovimientos(8,6);
   // juego.testBoard();
-  // let saltos = juego.buscarSaltos(7,5);
-  // console.log(saltos);
-  // let movimientos = juego.getSaltosRecursivos(15,7);
+  // juego.imprimirTablero();
+  // let movimientos = juego.buscarMovimientos(14,7);
+  // console.log("movimientos",movimientos);
+  // let movimientosFiltrados = juego.filtrarMovimientosValidos(movimientos);
+  // console.log("movimientos filtrados",movimientosFiltrados);
+  // let saltos = juego.buscarSaltos(15,7);
+  // console.log("saltos adyacentes",saltos);
+  // let saltosProfundos = juego.getSaltosRecursivos(15,7);
+  // juego.moverFicha([15,7],[13,8]);
+  // console.log("saltos profundos",saltosProfundos);
+  // juego.imprimirTablero();
   // console.log('a user connected');
 
 
