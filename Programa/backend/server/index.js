@@ -21,6 +21,52 @@ const usuarios = {};
 io.on('connection', (socket) => {
   console.log('a user connected');
 
+  
+  // Pruebas de Pozo no borrar
+  const juego = new Juego(2, 6, "Normal");
+  // let movimiento = juego.buscarMovimientos(8,6);
+  juego.testBoard();
+  juego.imprimirTablero();
+  let movimientosComplentos = juego.obtenerMovimientosYsaltos(15,7);
+  console.log("movimientos completos",movimientosComplentos.saltos);
+  // let movimientos = juego.buscarMovimientos(14,7);
+  // console.log("movimientos",movimientos);
+  // let movimientosFiltrados = juego.filtrarMovimientosValidos(movimientos);
+  // console.log("movimientos filtrados",movimientosFiltrados);
+  // let saltos = juego.buscarSaltos(15,7);
+  // console.log("saltos adyacentes",saltos);
+  // let saltosProfundos = juego.getSaltosRecursivos(15,7);
+  // juego.moverFicha([15,7],[13,8]);
+  // console.log("saltos profundos",saltosProfundos);
+  // juego.imprimirTablero();
+  // console.log('a user connected');
+
+
+  // Pruebas de Joza no borrar
+    // // Emitir el tablero actual al cliente
+  // socket.emit('tablero', administrador.obtenerTablero());
+  // console.log(administrador.obtenerTablero());
+
+  // // Emitir el jugador actual
+  // socket.emit('jugadorActual', administrador.jugadores[0]);
+
+  // socket.on('disconnect', () => {
+  //   console.log('user disconnected');
+  // });
+
+  // // Manejar el evento de movimiento de ficha
+  // socket.on('moverFicha', ({ jugador, coordInicial, posicionDestino }) => {
+  //   administrador.moverFicha(jugador, coordInicial, posicionDestino);
+  //   io.emit('tablero', administrador.obtenerTablero());
+  // });
+
+  // // Manejar el evento para obtener movimientos posibles
+  // socket.on('obtenerMovimientos', ({ coordInicial }) => {
+  //   const movimientos = administrador.juego.buscarMovimientos(coordInicial[0], coordInicial[1]);
+  //   socket.emit('movimientosPosibles', movimientos);
+  // });
+
+
   // Enviar las partidas actuales al cliente recién conectado
   socket.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
 

@@ -146,13 +146,21 @@ class Juego {
         }
         return movimientos;
     }
+
+    filtrarMovimientosValidos(movimientos) {
+      return movimientos.filter(([i, j]) => this.areaJuego[i][j] == 0);
+    }
+
     // Función de salto usando los desplazamientos específicos
     salto(coordenadaI, coordenadaJ, posicion) {
       const adyacente = this.movimiento(coordenadaI, coordenadaJ, posicion);
       if (!adyacente) return null;
 
+      // Lista de fichas para verificar si hay una adyacente
+      const fichas = ["1", "2", "3", "4", "5", "6"];
+
       const [adjI, adjJ] = adyacente;
-      if (this.areaJuego[adjI][adjJ] != 0) {  // Verifica si hay una ficha adyacente
+      if (fichas.includes(this.areaJuego[adjI][adjJ])) {  // Verifica si hay una ficha adyacente
           // Usa el desplazamiento específico de salto para la posición
           const { dx, dy } = Juego.desplazamientosSaltos[posicion];
           const saltoI = coordenadaI + dx;
@@ -189,8 +197,6 @@ class Juego {
           new Set() // Usamos un conjunto vacío para las posiciones visitadas
         );
       }
-
-      console.log("Lista de todas las rutas:", listaSaltos);
       return listaSaltos;
     }
 
@@ -209,7 +215,6 @@ class Juego {
       
       // Si no hay más saltos posibles, agregamos el camino actual a listaSaltos
       if (nuevosSaltos.length === 0) {
-        console.log("Ruta completa encontrada:", saltosAcumulados);
         listaSaltos.push([...saltosAcumulados]);  // Guardamos una copia del camino actual
         return;
       }
@@ -228,23 +233,37 @@ class Juego {
           );
         }
       }
-    
-      console.log("Saltos acumulados:", saltosAcumulados);
     }
     //Función para filtrar el salto por donde se vino
     filtrarSaltos(listaSaltos, setSaltos) {
-      console.log("Saltos sin filtrar:", listaSaltos);
-      console.log("Saltos visitados:", Array.from(setSaltos));
       let listaFiltrada = [];
       for (let salto of listaSaltos) {
         let saltoSTR = `${salto[0]},${salto[1]}`;
-        console.log("Salto:", salto);
         if (!setSaltos.has(saltoSTR)) {  // Verifica si el salto NO está en el set
           listaFiltrada.push(salto);
         }
       }
-      console.log("Saltos filtrados:", listaFiltrada);
       return listaFiltrada;
+    }
+
+    obtenerMovimientosYsaltos(coordenadaI, coordenadaJ) {
+      const movimientos = this.buscarMovimientos(coordenadaI, coordenadaJ);
+      const movimientosValidos = this.filtrarMovimientosValidos(movimientos);
+  
+      const saltos = this.getSaltosRecursivos(coordenadaI, coordenadaJ);
+  
+      return {
+        movimientosValidos,
+        saltos
+      };
+    }
+
+    //Función para mover una ficha, recibe la posición inicial y la posición destino
+    moverFicha(coordInicial, posicionDestino) {
+      const [coordI, coordJ] = coordInicial;
+      const [destinoI, destinoJ] = posicionDestino;
+      this.areaJuego[destinoI][destinoJ] = this.areaJuego[coordI][coordJ];
+      this.areaJuego[coordI][coordJ] = 0;
     }
 
     //Funcion para crear cambios en el tablero
@@ -269,6 +288,12 @@ class Juego {
         ["_","_","_","_","_","_","2","_","_","_","_","_","_"]
       ];
     }
+    imprimirTablero() {
+      for (let fila of this.areaJuego) {
+        console.log(fila.join(' '));
+      }
+    }
+    
 
 }
 
