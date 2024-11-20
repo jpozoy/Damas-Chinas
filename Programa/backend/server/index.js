@@ -21,6 +21,7 @@ const usuarios = {};
 io.on('connection', (socket) => {
   console.log('a user connected');
 
+  
   // Pruebas de Pozo no borrar
   // const juego = new Juego(2, 6, "Normal");
   // let movimiento = juego.buscarMovimientos(8,6);
@@ -63,37 +64,45 @@ io.on('connection', (socket) => {
   //   socket.emit('movimientosPosibles', movimientos);
   // });
 
+
   // Enviar las partidas actuales al cliente recién conectado
-  socket.emit('partidasActualizadas', partidas);
+  socket.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
 
   // Manejar autenticación del usuario
-  socket.on('autenticar', (nickname) => {
-    usuarios[socket.id] = { nickname };
-    socket.emit('autenticado', { success: true, nickname });
+  socket.on('autenticar', ({ nickname, avatar }) => {
+    usuarios[socket.id] = { nickname, avatar };
+    socket.emit('autenticado', { success: true, nickname, avatar });
     console.log('Usuario autenticado:', usuarios[socket.id]);
   });
 
   // Crear partida
   socket.on('crearPartida', ({ nickname, tipoJuego, cantidadJugadores }) => {
+    if (!usuarios[socket.id]) {
+      console.log('Usuario no autenticado');
+      console.log('nickname:', nickname);
+      console.log('usuarios:', usuarios[socket.id]);
+      socket.emit('error', { message: 'Usuario no autenticado' });
+      return;
+    }
     const idPartida = `partida-${Date.now()}`;
     partidas[idPartida] = {
       id: idPartida,
       creador: nickname,
       tipoJuego,
       cantidadJugadores,
-      jugadores: [nickname],
-      estado: 'esperando'
+      jugadores: [{ nickname, avatar: usuarios[socket.id].avatar }],
+      estado: 'esperando',
     };
     socket.join(idPartida);
-    io.emit('partidasActualizadas', partidas);
+    io.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
     socket.emit('partidaCreada', { idPartida });
     console.log('Partida creada:', partidas[idPartida]);
 
     // Iniciar contador de 3 minutos para cerrar la partida si no se completa
-    setTimeout(() => {
+    partidas[idPartida].timeout = setTimeout(() => {
       if (partidas[idPartida] && partidas[idPartida].estado === 'esperando') {
         delete partidas[idPartida];
-        io.emit('partidasActualizadas', partidas);
+        io.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
         console.log('Partida eliminada por tiempo de espera:', idPartida);
       }
     }, 3 * 60 * 1000); // 3 minutos
@@ -101,33 +110,63 @@ io.on('connection', (socket) => {
 
   // Unirse a partida
   socket.on('unirsePartida', ({ idPartida, nickname }) => {
+    if (!usuarios[socket.id]) {
+      socket.emit('error', { message: 'Usuario no autenticado' });
+      return;
+    }
     if (partidas[idPartida] && partidas[idPartida].jugadores.length < partidas[idPartida].cantidadJugadores) {
-      partidas[idPartida].jugadores.push(nickname);
+      partidas[idPartida].jugadores.push({ nickname, avatar: usuarios[socket.id].avatar });
       socket.join(idPartida);
-      io.to(idPartida).emit('jugadoresActualizados', partidas[idPartida].jugadores);
+      io.to(idPartida).emit('jugadoresActualizados', JSON.parse(JSON.stringify(sanitizePartidas(partidas[idPartida].jugadores))));
       if (partidas[idPartida].jugadores.length === partidas[idPartida].cantidadJugadores) {
         partidas[idPartida].estado = 'completa';
-        io.to(idPartida).emit('partidaCompleta', partidas[idPartida]);
+        io.to(idPartida).emit('partidaCompleta', JSON.parse(JSON.stringify(sanitizePartidas(partidas[idPartida]))));
       }
-      io.emit('partidasActualizadas', partidas); // Emitir actualización de partidas a todos los clientes
+      io.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
       console.log('Jugador unido:', partidas[idPartida]);
+    }
+  });
+
+  // Obtener creador de la partida
+  socket.on('obtenerCreador', (idPartida, callback) => {
+    if (partidas[idPartida]) {
+      callback({ creador: partidas[idPartida].creador });
+    }
+  });
+
+  // Cancelar partida
+  socket.on('cancelarPartida', (idPartida) => {
+    if (partidas[idPartida]) {
+      clearTimeout(partidas[idPartida].timeout);
+      delete partidas[idPartida];
+      io.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
+      console.log('Partida cancelada:', idPartida);
     }
   });
 
   // Desconectar usuario
   socket.on('disconnect', () => {
-    console.log('user disconnected');
+    console.log('Usuario desconectado:', socket.id);
     delete usuarios[socket.id];
   });
-  
 });
+
+// Función para eliminar propiedades circulares
+function sanitizePartidas(partidas) {
+  const sanitizedPartidas = {};
+  for (const id in partidas) {
+    sanitizedPartidas[id] = { ...partidas[id] };
+    delete sanitizedPartidas[id].timeout;
+  }
+  return sanitizedPartidas;
+}
 
 // Definir la ruta principal
 app.get('/', (req, res) => {
-  res.send('Hello World');
+  res.send('Servidor funcionando');
 });
 
 // Iniciar el servidor
 server.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Servidor corriendo en el puerto ${port}`);
 });
