@@ -28,7 +28,7 @@ class Administrador {
     if (this.jugadores.length === this.juego.numJugadores) {
       console.log("Iniciando juego...");
       this.iniciarTemporizador();
-      this.juego.testBoard(); // Método de prueba para inicializar o cargar el tablero
+      this.juego.setAreaJuego(this.jugadores.length); // Método de prueba para inicializar o cargar el tablero
     } else {
       console.log("No hay suficientes jugadores para comenzar.");
     }
@@ -85,7 +85,13 @@ class Administrador {
   }
 
   // Mover una ficha
-  moverFicha(jugador, coordInicial, posicionDestino) {
+  moverFicha(socketId, coordInicial, posicionDestino) {
+    const jugador = this.jugadores.find(j => j.socketId === socketId);
+    if (!jugador) {
+      console.log("Jugador no encontrado.");
+      return;
+    }
+
     const movimientos = this.juego.buscarMovimientos(coordInicial[0], coordInicial[1]);
     const saltos = this.juego.buscarSaltos(coordInicial[0], coordInicial[1]);
 

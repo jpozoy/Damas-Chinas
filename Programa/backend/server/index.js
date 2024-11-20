@@ -1,174 +1,108 @@
 import express from 'express';
-import logger from 'morgan';
+import http from 'http';
 import { Server } from 'socket.io';
-import { createServer } from 'node:http';
 import Administrador from './administrador.js';
-import Juego from './juego.js';
 
-const port = 3000;
-
-// Inicializar express
 const app = express();
-const server = createServer(app);
-const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:5173", // Permite este origen específico
-    methods: ["GET", "POST"],        // Métodos permitidos
-    credentials: true                // Si necesitas cookies o encabezados adicionales
-  }
-});
+const server = http.createServer(app);
+const io = new Server(server);
 
-app.use(logger('dev'));
+const PORT = 3000;
 
-// Estructura para almacenar partidas y usuarios
-const partidas = {};
-const usuarios = {};
+let partidas = {}; // Almacenará las partidas activas
+let usuarios = {}; // Almacenará los usuarios autenticados
 
 io.on('connection', (socket) => {
+  console.log('Nuevo cliente conectado:', socket.id);
 
-  // Enviar las partidas actuales al cliente recién conectado
-  socket.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
-
-  // Manejar autenticación del usuario
   socket.on('autenticar', ({ nickname, avatar }) => {
-    usuarios[socket.id] = { nickname, avatar };
-    socket.emit('autenticado', { success: true, nickname, avatar });
-  });
-
-  // Crear partida
-  socket.on('crearPartida', ({ nickname, tipoJuego, cantidadJugadores }) => {
-    if (!usuarios[socket.id]) {
-      socket.emit('error', { message: 'Usuario no autenticado' });
-      return;
-    }
-    const idPartida = `partida-${Date.now()}`;
-    const jugador = { nickname, avatar: usuarios[socket.id].avatar };
-    partidas[idPartida] = {
-      id: idPartida,
-      creador: nickname,
-      tipoJuego,
-      cantidadJugadores,
-      jugadores: [jugador],
-      estado: 'esperando',
-      administrador: new Administrador(idPartida, cantidadJugadores, tipoJuego, 0) // Inicializar el administrador del juego
-    };
-    partidas[idPartida].administrador.agregarJugador(jugador); // Agregar el creador al administrador
-    socket.join(idPartida);
-    io.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
-    socket.emit('partidaCreada', { idPartida });
-
-    // Iniciar contador de 3 minutos para cerrar la partida si no se completa
-    partidas[idPartida].timeout = setTimeout(() => {
-      if (partidas[idPartida] && partidas[idPartida].estado === 'esperando') {
-        delete partidas[idPartida];
-        io.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
-      }
-    }, 3 * 60 * 1000); // 3 minutos
-  });
-
-  // Unirse a partida
-  socket.on('unirsePartida', ({ idPartida, nickname }) => {
-    if (!partidas[idPartida]) {
-      socket.emit('error', { message: 'Partida no encontrada' });
-      return;
-    }
-    if (!usuarios[socket.id]) {
-      socket.emit('error', { message: 'Usuario no autenticado' });
-      return;
-    }
-    if (partidas[idPartida].jugadores.length < partidas[idPartida].cantidadJugadores) {
-      const jugador = { nickname, avatar: usuarios[socket.id].avatar };
-      console.log('Uniendo a la partida:', jugador);
-      partidas[idPartida].jugadores.push(jugador);
-      partidas[idPartida].administrador.agregarJugador(jugador);
-      socket.join(idPartida);
-      io.emit('jugadoresActualizados', JSON.parse(JSON.stringify(sanitizePartida(partidas[idPartida]))));
-      if (partidas[idPartida].jugadores.length === partidas[idPartida].cantidadJugadores) {
-        partidas[idPartida].estado = 'completa';
-        io.emit('partidaCompleta', JSON.parse(JSON.stringify(sanitizePartida(partidas[idPartida]))));
-        // Iniciar el juego
-        partidas[idPartida].administrador.iniciarJuego();
-        console.log('Tablero actual:', partidas[idPartida].administrador.obtenerTablero());
-        io.emit('tableroActualizado', partidas[idPartida].administrador.obtenerTablero());
-        io.emit('turnoActualizado', 0); // Iniciar con el primer jugador
-      }
-      io.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
+    if (nickname && avatar) {
+      usuarios[socket.id] = { nickname, avatar };
+      socket.emit('autenticado', { success: true });
+      console.log(`Usuario autenticado: ${nickname}`);
     } else {
-      socket.emit('error', { message: 'Partida llena' });
+      socket.emit('autenticado', { success: false });
     }
   });
 
-  // Manejar movimiento de ficha
+  socket.on('crearPartida', ({ nickname, tipoJuego, cantidadJugadores }) => {
+    const idPartida = `partida_${Date.now()}`;
+    const nuevaPartida = new Administrador(idPartida, cantidadJugadores, tipoJuego, 3); 
+    nuevaPartida.agregarJugador({ nickname, socketId: socket.id });
+    partidas[idPartida] = nuevaPartida;
+
+    socket.join(idPartida);
+    io.to(idPartida).emit('partidaCreada', { idPartida });
+    io.emit('partidasActualizadas', partidas);
+  });
+
+  socket.on('unirsePartida', ({ idPartida, nickname }) => {
+    const partida = partidas[idPartida];
+    if (partida && partida.agregarJugador({ nickname, socketId: socket.id })) {
+      socket.join(idPartida);
+      io.to(idPartida).emit('jugadoresActualizados', { jugadores: partida.jugadores });
+
+      if (partida.jugadores.length === partida.juego.numJugadores) {
+        partida.iniciarJuego();
+        io.to(idPartida).emit('partidaCompleta', { idPartida });
+      } else {
+        io.to(idPartida).emit('jugadoresActualizados', { jugadores: partida.jugadores });
+      }
+    } else {
+      socket.emit('error', 'No se pudo unir a la partida.');
+    }
+  });
+
   socket.on('moverFicha', ({ idPartida, coordenadaInicial, coordenadaFinal }) => {
     const partida = partidas[idPartida];
     if (partida) {
-      const jugador = partida.jugadores[partida.administrador.turnoActual];
-      partida.administrador.moverFicha(jugador, coordenadaInicial, coordenadaFinal);
-      io.emit('tableroActualizado', partida.administrador.obtenerTablero());
-      // Actualizar el turno
-      partida.administrador.turnoActual = (partida.administrador.turnoActual + 1) % partida.jugadores.length;
-      io.emit('turnoActualizado', partida.administrador.turnoActual);
+      partida.moverFicha(socket.id, coordenadaInicial, coordenadaFinal);
+      io.to(idPartida).emit('tableroActualizado', partida.obtenerTablero());
     }
   });
 
-  // Obtener creador de la partida
-  socket.on('obtenerCreador', (idPartida, callback) => {
-    if (partidas[idPartida]) {
-      callback({ creador: partidas[idPartida].creador, cantidadJugadores: partidas[idPartida].cantidadJugadores });
-    }
+  socket.on('solicitarPartidas', () => {
+    const partidasDisponibles = Object.values(partidas).filter(partida => partida.jugadores.length < partida.juego.numJugadores);
+    socket.emit('partidasActualizadas', partidasDisponibles);
   });
 
-  // Cancelar partida
-  socket.on('cancelarPartida', (idPartida) => {
-    if (partidas[idPartida]) {
-      clearTimeout(partidas[idPartida].timeout);
+  socket.on('cancelarPartida', ({ idPartida }) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      io.to(idPartida).emit('partidaCancelada', { idPartida });
       delete partidas[idPartida];
-      io.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
+      io.emit('partidasActualizadas', partidas);
     }
   });
 
-  // Desconectar usuario
+  socket.on('obtenerCreador', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      const creador = partida.jugadores[0].nickname;
+      callback({ creador });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
+  socket.on('obtenerJugadores', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      const jugadores = partida.jugadores;
+      const cantidadJugadores = partida.juego.numJugadores;
+      callback({ jugadores, cantidadJugadores });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
   socket.on('disconnect', () => {
+    console.log('Cliente desconectado:', socket.id);
     delete usuarios[socket.id];
+    // Aquí podrías manejar la lógica para cuando un jugador se desconecta
   });
 });
 
-// Función para eliminar propiedades circulares
-function sanitizePartidas(partidas) {
-  const sanitizedPartidas = {};
-  for (const id in partidas) {
-    sanitizedPartidas[id] = { ...partidas[id] };
-    delete sanitizedPartidas[id].timeout;
-    if (sanitizedPartidas[id].administrador && sanitizedPartidas[id].administrador.juego) {
-      delete sanitizedPartidas[id].administrador.juego.areaJuego; // Eliminar cualquier otra referencia circular
-    }
-  }
-  return sanitizedPartidas;
-}
-
-function sanitizePartida(partida) {
-  const sanitizedPartida = { ...partida }; // Copiar partida
-  delete sanitizedPartida.timeout;
-
-  // Si existe un administrador, eliminar referencias circulares
-  if (sanitizedPartida.administrador && sanitizedPartida.administrador.juego) {
-    delete sanitizedPartida.administrador.juego.areaJuego;
-  }
-
-  // Asegurarse de que jugadores sea un array
-  if (!Array.isArray(sanitizedPartida.jugadores)) {
-    sanitizedPartida.jugadores = Object.values(sanitizedPartida.jugadores || []);
-  }
-
-  return sanitizedPartida;
-}
-
-// Definir la ruta principal
-app.get('/', (req, res) => {
-  res.send('Servidor funcionando');
-});
-
-// Iniciar el servidor
-server.listen(port, () => {
-  console.log(`Servidor corriendo en el puerto ${port}`);
+server.listen(PORT, () => {
+  console.log(`Servidor corriendo en el puerto ${PORT}`);
 });

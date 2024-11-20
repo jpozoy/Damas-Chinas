@@ -11,8 +11,11 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "circular-json": "^0.5.9",
     "express": "4.21.1",
+    "flatted": "^3.3.2",
     "morgan": "1.10.0",
-    "socket.io": "4.8.1"
+    "socket.io": "^4.8.1",
+    "socket.io-parser": "^3.3.4"
   }
 }

@@ -6,7 +6,7 @@ class Juego {
         this.numJugadores = numJugadores;
         this.modoJuego = modoJuego;
         this.jugadores = [];
-        this.areaJuego;
+        this.areaJuego = [];
         this.setAreaJuego(numJugadores);
     }
 

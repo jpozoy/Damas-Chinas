@@ -23,33 +23,51 @@ function WaitingRoom() {
       setNickname(nicknameParam);
       setAvatar(avatarParam);
     }
-  
+
     console.log('Conectando al servidor de sockets...');
     socket.on('connect', () => {
       console.log('Conectado al servidor de sockets');
+      console.log(`Socket ID en el frontend: ${socket.id}`);
+      socket.emit('unirsePartida', { idPartida, nickname });
     });
-  
+
     socket.on('jugadoresActualizados', (data) => {
       console.log('Jugadores actualizados recibidos:', data);
-      // Convertir el objeto en un array
-      const jugadoresArray = Object.keys(data).filter(key => !isNaN(key)).map(key => data[key]);
-      setJugadores(jugadoresArray);
+      setJugadores(data.jugadores);
     });
-  
+
     socket.on('partidaCompleta', (data) => {
       console.log('Partida completa recibida:', data);
       // Redirigir al área de juego cuando la partida esté completa
       navigate(`/game/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
     });
-  
+
+    socket.on('partidaCancelada', ({ idPartida }) => {
+      console.log('Partida cancelada recibida');
+      navigate(`/?nickname=${nickname}&avatar=${avatar}`);
+    });
+
     // Obtener el creador de la partida
     socket.emit('obtenerCreador', idPartida, (data) => {
-      console.log('Creador de la partida recibido:', data);
-      console.log('Jugadores:', data.cantidadJugadores);
-      setCreador(data.creador);
-      setCantidadJugadores(data.cantidadJugadores);
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        console.log('Creador de la partida recibido:', data);
+        setCreador(data.creador);
+      }
     });
-  
+
+    // Obtener los jugadores de la partida
+    socket.emit('obtenerJugadores', idPartida, (data) => {
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        console.log('Jugadores de la partida recibidos:', data);
+        setJugadores(data.jugadores);
+        setCantidadJugadores(data.cantidadJugadores);
+      }
+    });
+
     // Contador de espera
     const timer = setInterval(() => {
       setTimeLeft((prevTime) => {
@@ -60,17 +78,18 @@ function WaitingRoom() {
         return prevTime - 1;
       });
     }, 1000);
-  
+
     return () => {
       socket.off('jugadoresActualizados');
       socket.off('partidaCompleta');
+      socket.off('partidaCancelada');
       clearInterval(timer);
     };
   }, [idPartida, location, navigate, nickname, avatar]);
 
   const handleCancel = () => {
-    socket.emit('cancelarPartida', idPartida);
-    navigate('/');
+    console.log('Botón de cancelar clicado');
+    socket.emit('cancelarPartida', { idPartida });
   };
 
   return (

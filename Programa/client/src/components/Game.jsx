@@ -23,10 +23,14 @@ function Game() {
       setAvatar(avatarParam);
     }
 
-    socket.emit('unirsePartida', { idPartida, nickname });
+    console.log('Conectando al servidor de sockets...');
+    socket.on('connect', () => {
+      console.log('Conectado al servidor de sockets');
+      socket.emit('unirsePartida', { idPartida, nickname });
+    });
 
     socket.on('jugadoresActualizados', (data) => {
-      console.log('Jugadores actualizados:', data);
+      console.log('Jugadores actualizados recibidos:', data);
       setJugadores(data.jugadores);
     });
 
@@ -41,7 +45,7 @@ function Game() {
     });
 
     socket.on('partidaCompleta', (data) => {
-      console.log('Partida completa:', data);
+      console.log('Partida completa recibida:', data);
       // Redirigir al área de juego cuando la partida esté completa
       console.log('Partida completa, redirigiendo al área de juego...');
     });
@@ -91,7 +95,6 @@ function Game() {
           <img src={avatar} alt="avatar" className="w-16 h-16 rounded-full border-2" />
           <span className="text-black font-bold text-xl">{nickname}</span>
         </div>
-        
 
         {/* Botón de Regresar al Menú */}
         <button onClick={() => navigate('/')} className="absolute top-4 left-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
@@ -105,13 +108,13 @@ function Game() {
             {tablero && tablero.map((fila, i) => (
               <div key={i} className="flex">
                 {fila.map((celda, j) => (
-                  <div
+                  <button
                     key={`${i}-${j}`}
                     className={`w-8 h-8 flex items-center justify-center border border-black ${getCeldaClass(celda)}`}
                     onClick={() => handleMovimiento([i, j], [i, j])}
                   >
                     {celda !== '_' && <span className="text-white">{celda}</span>}
-                  </div>
+                  </button>
                 ))}
               </div>
             ))}
