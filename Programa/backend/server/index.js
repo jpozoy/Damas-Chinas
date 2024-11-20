@@ -44,7 +44,7 @@ io.on('connection', (socket) => {
 
       if (partida.jugadores.length === partida.juego.numJugadores) {
         partida.iniciarJuego();
-        io.to(idPartida).emit('partidaCompleta', { idPartida });
+        io.emit('partidaCompleta', { idPartida });
       } else {
         io.to(idPartida).emit('jugadoresActualizados', { jugadores: partida.jugadores });
       }
