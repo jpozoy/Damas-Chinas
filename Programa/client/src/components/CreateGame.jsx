@@ -1,100 +1,78 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
 import io from 'socket.io-client';
-import '../styles/CreateGame.css';
 
 const socket = io('/');
 
 function CreateGame() {
   const [nickname, setNickname] = useState('');
-  const [players, setPlayers] = useState(2);
-  const [tablero, setTablero] = useState([]);
-  const [selectedI, setSelectedI] = useState(null);
-  const [selectedJ, setSelectedJ] = useState(null);
-  const [jugadorActual, setJugadorActual] = useState(null);
-  const [movimientosPosibles, setMovimientosPosibles] = useState([]);
+  const [tipoJuego, setTipoJuego] = useState('Vs');
+  const [cantidadJugadores, setCantidadJugadores] = useState(2);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
-    // Escuchar el evento 'tablero' del socket
-    socket.on('tablero', (data) => {
-      setTablero(data);
-    });
-
-    // Escuchar el evento 'jugadorActual' del socket
-    socket.on('jugadorActual', (data) => {
-      setJugadorActual(data);
-    });
-
-    // Escuchar el evento 'movimientosPosibles' del socket
-    socket.on('movimientosPosibles', (data) => {
-      setMovimientosPosibles(data);
-    });
-
-    // Limpiar los eventos al desmontar el componente
-    return () => {
-      socket.off('tablero');
-      socket.off('jugadorActual');
-      socket.off('movimientosPosibles');
-    };
-  }, []);
-
-  const handleCreateGame = (e) => {
-    e.preventDefault();
-    // Lógica para crear una nueva partida
-    console.log('Crear partida:', { nickname, players });
-  };
-
-  const handleCellClick = (i, j) => {
-    setSelectedI(i);
-    setSelectedJ(j);
-    socket.emit('obtenerMovimientos', { coordInicial: [i, j] });
-  };
-
-  const handleMove = (i, j) => {
-    if (movimientosPosibles.some(mov => mov[0] === i && mov[1] === j)) {
-      socket.emit('moverFicha', {
-        jugador: jugadorActual,
-        coordInicial: [selectedI, selectedJ],
-        posicionDestino: [i, j]
-      });
-      setSelectedI(null);
-      setSelectedJ(null);
-      setMovimientosPosibles([]);
-    } else {
-      console.log('Movimiento inválido');
+    const params = new URLSearchParams(location.search);
+    const nicknameParam = params.get('nickname');
+    if (nicknameParam) {
+      setNickname(nicknameParam);
     }
+  }, [location]);
+
+  const handleCreateGame = () => {
+    socket.emit('crearPartida', { nickname, tipoJuego, cantidadJugadores });
+    socket.on('partidaCreada', ({ idPartida }) => {
+      console.log('Partida creada:', { idPartida });
+      navigate(`/waiting-room/${idPartida}`);
+    });
   };
 
   return (
-    <div>
-      <h2>Crear Partida</h2>
+    <div className="h-screen bg-cover bg-center relative" style={{ backgroundImage: "url('https://e1.pxfuel.com/desktop-wallpaper/123/676/desktop-wallpaper-new-version-of-agar-io-agario.jpg')" }}>
+      {/* Contenedor Principal */}
+      <div className="flex flex-col items-center justify-center h-full space-y-8 bg-gray-900/60 text-black">
 
-      <div className="tablero">
-        {tablero.map((fila, i) => (
-          <div key={i} className="fila">
-            {fila.map((celda, j) => (
-              <div
-                key={j}
-                className={`celda celda-${celda} ${movimientosPosibles.some(mov => mov[0] === i && mov[1] === j) ? 'movimiento-posible' : ''}`}
-                onClick={() => (selectedI !== null && selectedJ !== null ? handleMove(i, j) : handleCellClick(i, j))}
+        {/* Logo Principal */}
+        <div className="bg-gray-100 rounded-lg p-8 w-1/3 shadow-lg text-center">
+          <h2 className="text-4xl font-bold">Crear Partida</h2>
+          <div className="mb-4">
+            <label className="block mb-2">
+              Nickname:
+              <input
+                type="text"
+                value={nickname}
+                onChange={(e) => setNickname(e.target.value)}
+                className="mt-2 w-full p-3 rounded-md text-black border border-black focus:outline-none"
+              />
+            </label>
+            <label className="block mb-2">
+              Tipo de Juego:
+              <select
+                value={tipoJuego}
+                onChange={(e) => setTipoJuego(e.target.value)}
+                className="mt-2 w-full p-3 rounded-md text-black border border-black focus:outline-none"
               >
-                {celda !== '_' && celda}
-              </div>
-            ))}
+                <option value="Vs">Vs</option>
+              </select>
+            </label>
+            <label className="block mb-2">
+              Cantidad de Jugadores:
+              <select
+                value={cantidadJugadores}
+                onChange={(e) => setCantidadJugadores(e.target.value)}
+                className="mt-2 w-full p-3 rounded-md text-black border border-black focus:outline-none"
+              >
+                <option value={2}>2</option>
+                <option value={3}>3</option>
+                <option value={4}>4</option>
+                <option value={6}>6</option>
+              </select>
+            </label>
+            <button onClick={handleCreateGame} className="bg-green-500 hover:bg-green-600 text-white font-bold py-3 px-4 rounded mt-4 w-full text-lg">
+              Crear Partida
+            </button>
           </div>
-        ))}
-      </div>
-      <div>
-        <label>
-          Coordenada I:
-          <input type="text" value={selectedI !== null ? selectedI : ''} readOnly />
-        </label>
-        <label>
-          Coordenada J:
-          <input type="text" value={selectedJ !== null ? selectedJ : ''} readOnly />
-        </label>
-      </div>
-      <div>
-        <h3>Jugador Actual: {jugadorActual ? jugadorActual.nickname : 'N/A'}</h3>
+        </div>
       </div>
     </div>
   );
