@@ -15,7 +15,7 @@ class Administrador {
     if (this.jugadores.length < this.juego.numJugadores) {
       this.jugadores.push(jugador);
       this.juego.jugadores.push(jugador); // Añade el jugador a la instancia de juego
-      console.log(`Jugador ${jugador.nickname} añadido al juego.`);
+      console.log(`Jugador ${jugador.nickname} añadido al juego con avatar ${jugador.avatar}.`);
       return true;
     } else {
       console.log("El juego ya está lleno.");

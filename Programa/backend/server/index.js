@@ -30,7 +30,7 @@ io.on('connection', (socket) => {
   socket.on('crearPartida', ({ nickname, avatar, tipoJuego, cantidadJugadores }) => {
     const idPartida = `partida_${Date.now()}`;
     const nuevaPartida = new Administrador(idPartida, cantidadJugadores, tipoJuego, 3); 
-    nuevaPartida.agregarJugador({ nickname, avatar, socketId: socket.id });
+    nuevaPartida.agregarJugador({ nickname, avatar: usuarios[socket.id].avatar, socketId: socket.id });
     partidas[idPartida] = nuevaPartida;
 
     socket.join(idPartida);
@@ -45,7 +45,7 @@ io.on('connection', (socket) => {
 
   socket.on('unirsePartida', ({ idPartida, nickname, avatar }) => {
     const partida = partidas[idPartida];
-    if (partida && partida.agregarJugador({ nickname, avatar, socketId: socket.id })) {
+    if (partida && partida.agregarJugador({ nickname, avatar: usuarios[socket.id].avatar, socketId: socket.id })) {
       socket.join(idPartida);
       io.to(idPartida).emit('jugadoresActualizados', { jugadores: partida.jugadores });
 

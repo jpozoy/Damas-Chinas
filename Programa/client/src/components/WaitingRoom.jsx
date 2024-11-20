@@ -84,6 +84,7 @@ function WaitingRoom() {
         if (data.error) {
           console.error(data.error);
         } else {
+          console.log('Jugadores actualizados:', data.jugadores);
           setJugadores(data.jugadores);
           setCantidadJugadores(data.cantidadJugadores);
         }
