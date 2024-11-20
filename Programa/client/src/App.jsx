@@ -5,6 +5,7 @@ import CreateGame from './components/CreateGame';
 import JoinGame from './components/JoinGame';
 import Ranking from './components/Ranking';
 import WaitingRoom from './components/WaitingRoom';
+import Game from './components/Game';
 
 function App() {
   return (
@@ -15,6 +16,7 @@ function App() {
         <Route path="/join-game" element={<JoinGame />} />
         <Route path="/ranking" element={<Ranking />} />
         <Route path="/waiting-room/:idPartida" element={<WaitingRoom />} />
+        <Route path="/game/:idPartida" element={<Game />} />
       </Routes>
     </Router>
   );

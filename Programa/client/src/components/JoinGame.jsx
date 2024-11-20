@@ -35,6 +35,8 @@ function JoinGame() {
   }, [location]);
 
   const handleJoinGame = (idPartida) => {
+    console.log('Intentando unirse a la partida:', idPartida, 'con nickname:', nickname);
+    socket.emit('autenticar', { nickname, avatar }); // Asegúrate de que el usuario esté autenticado
     socket.emit('unirsePartida', { idPartida, nickname });
     navigate(`/waiting-room/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
   };
