@@ -13,7 +13,7 @@ function WaitingRoom() {
   const [cantidadJugadores, setCantidadJugadores] = useState(0);
   const [nickname, setNickname] = useState('');
   const [avatar, setAvatar] = useState('');
-  const [timeLeft, setTimeLeft] = useState(180); // 3 minutos en segundos
+  const [timeLeft, setTimeLeft] = useState(0); // Inicializar con 0
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -25,26 +25,11 @@ function WaitingRoom() {
     }
 
     console.log('Conectando al servidor de sockets...');
+    console.log('Conectando al servidor de sockets...');
     socket.on('connect', () => {
-      console.log('Conectado al servidor de sockets');
+      console.log('Esta picha llega aqui');
       console.log(`Socket ID en el frontend: ${socket.id}`);
       socket.emit('unirsePartida', { idPartida, nickname });
-    });
-
-    socket.on('jugadoresActualizados', (data) => {
-      console.log('Jugadores actualizados recibidos:', data);
-      setJugadores(data.jugadores);
-    });
-
-    socket.on('partidaCompleta', (data) => {
-      console.log('Partida completa recibida:', data);
-      // Redirigir al área de juego cuando la partida esté completa
-      navigate(`/game/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
-    });
-
-    socket.on('partidaCancelada', ({ idPartida }) => {
-      console.log('Partida cancelada recibida');
-      navigate(`/?nickname=${nickname}&avatar=${avatar}`);
     });
 
     // Obtener el creador de la partida
@@ -68,22 +53,46 @@ function WaitingRoom() {
       }
     });
 
-    // Contador de espera
-    const timer = setInterval(() => {
-      setTimeLeft((prevTime) => {
-        if (prevTime <= 1) {
-          clearInterval(timer);
-          return 0;
+    // Obtener el tiempo restante de la partida
+    const obtenerTiempoRestante = () => {
+      socket.emit('obtenerTiempoRestante', idPartida, (data) => {
+        if (data.error) {
+          console.error(data.error);
+        } else {
+          console.log('Tiempo restante recibido:', data);
+          setTimeLeft(data.tiempoRestante);
         }
-        return prevTime - 1;
       });
-    }, 1000);
+    };
+
+    // Verificar si la partida está completa
+    const verificarPartidaCompleta = () => {
+      socket.emit('verificarPartidaCompleta', idPartida, (data) => {
+        if (data.error) {
+          console.error(data.error);
+        } else if (data.partidaCompleta) {
+          console.log('Partida completa recibida:', data);
+          navigate(`/game/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
+        }
+      });
+    };
+
+    // Configurar un intervalo para solicitar el tiempo restante, la lista de jugadores y verificar si la partida está completa cada 5 segundos
+    const intervalo = setInterval(() => {
+      obtenerTiempoRestante();
+      socket.emit('obtenerJugadores', idPartida, (data) => {
+        if (data.error) {
+          console.error(data.error);
+        } else {
+          setJugadores(data.jugadores);
+          setCantidadJugadores(data.cantidadJugadores);
+        }
+      });
+      verificarPartidaCompleta();
+    }, 500);
 
     return () => {
-      socket.off('jugadoresActualizados');
-      socket.off('partidaCompleta');
-      socket.off('partidaCancelada');
-      clearInterval(timer);
+      clearInterval(intervalo);
     };
   }, [idPartida, location, navigate, nickname, avatar]);
 

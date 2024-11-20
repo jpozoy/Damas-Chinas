@@ -1,4 +1,3 @@
-// archivo administrador.js
 import Juego from './juego.js';
 
 class Administrador {
@@ -8,6 +7,7 @@ class Administrador {
     this.jugadores = []; // lista de jugadores en la partida
     this.tiempoRestante = tiempoLimite * 60; // tiempo en segundos
     this.intervaloTiempo = null; // manejador del intervalo para el tiempo
+    this.iniciarTemporizador(); // Iniciar el temporizador al crear la partida
   }
 
   // Agregar jugadores al juego
@@ -27,7 +27,6 @@ class Administrador {
   iniciarJuego() {
     if (this.jugadores.length === this.juego.numJugadores) {
       console.log("Iniciando juego...");
-      this.iniciarTemporizador();
       this.juego.setAreaJuego(this.jugadores.length); // Método de prueba para inicializar o cargar el tablero
     } else {
       console.log("No hay suficientes jugadores para comenzar.");
@@ -40,6 +39,14 @@ class Administrador {
       this.intervaloTiempo = setInterval(() => {
         this.tiempoRestante--;
         console.log(`Tiempo restante: ${this.tiempoRestante} segundos`);
+
+        // Emitir el tiempo restante a todos los jugadores
+        this.jugadores.forEach(jugador => {
+          const socket = global.io.sockets.sockets.get(jugador.socketId);
+          if (socket) {
+            socket.emit('tiempoActualizado', { tiempoRestante: this.tiempoRestante });
+          }
+        });
 
         if (this.tiempoRestante <= 0) {
           console.log("El tiempo ha terminado.");

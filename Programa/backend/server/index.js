@@ -7,6 +7,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server);
 
+global.io = io; // Hacer io global para que pueda ser usado en administrador.js
+
 const PORT = 3000;
 
 let partidas = {}; // Almacenará las partidas activas
@@ -25,26 +27,31 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('crearPartida', ({ nickname, tipoJuego, cantidadJugadores }) => {
+  socket.on('crearPartida', ({ nickname, avatar, tipoJuego, cantidadJugadores }) => {
     const idPartida = `partida_${Date.now()}`;
     const nuevaPartida = new Administrador(idPartida, cantidadJugadores, tipoJuego, 3); 
-    nuevaPartida.agregarJugador({ nickname, socketId: socket.id });
+    nuevaPartida.agregarJugador({ nickname, avatar, socketId: socket.id });
     partidas[idPartida] = nuevaPartida;
 
     socket.join(idPartida);
     io.to(idPartida).emit('partidaCreada', { idPartida });
-    io.emit('partidasActualizadas', partidas);
+    io.emit('partidasActualizadas', Object.values(partidas).map(partida => ({
+      id: partida.juego.id,
+      creador: partida.jugadores[0].nickname,
+      jugadores: partida.jugadores,
+      cantidadJugadores: partida.juego.numJugadores
+    })));
   });
 
-  socket.on('unirsePartida', ({ idPartida, nickname }) => {
+  socket.on('unirsePartida', ({ idPartida, nickname, avatar }) => {
     const partida = partidas[idPartida];
-    if (partida && partida.agregarJugador({ nickname, socketId: socket.id })) {
+    if (partida && partida.agregarJugador({ nickname, avatar, socketId: socket.id })) {
       socket.join(idPartida);
       io.to(idPartida).emit('jugadoresActualizados', { jugadores: partida.jugadores });
 
       if (partida.jugadores.length === partida.juego.numJugadores) {
         partida.iniciarJuego();
-        io.emit('partidaCompleta', { idPartida });
+        io.to(idPartida).emit('partidaCompleta', { idPartida });
       } else {
         io.to(idPartida).emit('jugadoresActualizados', { jugadores: partida.jugadores });
       }
@@ -77,7 +84,12 @@ io.on('connection', (socket) => {
     if (partida) {
       io.to(idPartida).emit('partidaCancelada', { idPartida });
       delete partidas[idPartida];
-      io.emit('partidasActualizadas', partidas);
+      io.emit('partidasActualizadas', Object.values(partidas).map(partida => ({
+        id: partida.juego.id,
+        creador: partida.jugadores[0].nickname,
+        jugadores: partida.jugadores,
+        cantidadJugadores: partida.juego.numJugadores
+      })));
     }
   });
 
@@ -97,6 +109,26 @@ io.on('connection', (socket) => {
       const jugadores = partida.jugadores;
       const cantidadJugadores = partida.juego.numJugadores;
       callback({ jugadores, cantidadJugadores });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
+  socket.on('obtenerTiempoRestante', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      const tiempoRestante = partida.tiempoRestante;
+      callback({ tiempoRestante });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
+  socket.on('verificarPartidaCompleta', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      const partidaCompleta = partida.jugadores.length === partida.juego.numJugadores;
+      callback({ partidaCompleta });
     } else {
       callback({ error: 'Partida no encontrada' });
     }
