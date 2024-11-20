@@ -20,6 +20,33 @@ class Juego {
       6: { dxPar: 1, dyPar: 0, dxImpar: 1, dyImpar: -1 }
     };
 
+    static posicionesPartida = {
+      1: [
+        { i: 0, j: 6 }, { i: 1, j: 6 }, { i: 1, j: 7 }, { i: 2, j: 5 }, { i: 2, j: 6 }, 
+        { i: 2, j: 7 }, { i: 3, j: 5 }, { i: 3, j: 6 }, { i: 3, j: 7 }, { i: 3, j: 8 }
+      ],
+      2: [
+        { i: 4, j: 9 }, { i: 4, j: 10 }, { i: 4, j: 11 }, { i: 4, j: 12 }, { i: 5, j: 10 }, 
+        { i: 5, j: 11 }, { i: 5, j: 12 }, { i: 6, j:10  }, { i: 6, j: 11 }, { i: 7, j: 11 }
+      ],
+      3: [
+        { i: 9, j: 11 }, { i: 10, j: 10 }, { i: 10, j: 11 }, { i: 11, j: 10 }, { i: 11, j: 11 }, 
+        { i: 11, j: 12 }, { i: 12, j: 9 }, { i: 12, j: 10 }, { i: 12, j: 11 }, { i: 12, j: 12 }
+      ],
+      4: [
+        { i: 13, j: 5 }, { i: 13, j: 6 }, { i: 13, j: 7 }, { i: 13, j: 8 }, { i: 14, j: 5 }, 
+        { i: 14, j: 6 }, { i: 14, j: 7 }, { i: 15, j: 6 }, { i: 15, j: 7 }, { i: 16, j: 6 }
+      ],
+      5: [
+        { i: 9, j: 2 }, { i: 10, j: 1 }, { i: 10, j: 2 }, { i: 11, j: 1 }, { i: 11, j: 2 }, 
+        { i: 11, j: 3 }, { i: 12, j: 0 }, { i: 12, j: 1 }, { i: 12, j: 2 }, { i: 12, j: 3 }
+      ],
+      6: [
+        { i: 4, j: 0 }, { i: 4, j: 1 }, { i: 4, j: 2 }, { i: 4, j: 3 }, { i: 5, j: 1 }, 
+        { i: 5, j: 2 }, { i: 5, j: 3 }, { i: 6, j: 1 }, { i: 6, j: 2 }, { i: 7, j: 2 }
+      ]
+    };
+
     // Desplazamientos específicos para cada posición de salto
     static desplazamientosSaltos = {
       1: { dx: 0, dy: -2 },
@@ -265,6 +292,13 @@ class Juego {
       this.areaJuego[destinoI][destinoJ] = this.areaJuego[coordI][coordJ];
       this.areaJuego[coordI][coordJ] = 0;
     }
+
+    //Verificar si hay un ganador
+    verificarGanador(jugador) {
+      const posicionesDestino = Juego.posicionesPartida[jugador];
+      return posicionesDestino.every(({ i, j }) => this.areaJuego[x][y] === String(jugador));
+    }
+    
 
     //Funcion para crear cambios en el tablero
     testBoard() {
