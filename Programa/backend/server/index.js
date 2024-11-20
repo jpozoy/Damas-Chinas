@@ -20,6 +20,14 @@ const usuarios = {};
 
 io.on('connection', (socket) => {
   console.log('a user connected');
+  // Pruebas de Pozo no borrar
+  // const juego = new Juego(2, 2, "Normal");
+  // // let movimiento = juego.buscarMovimientos(8,6);
+  // juego.testBoard();
+  // juego.imprimirTablero();
+  // let movimientosComplentos = juego.obtenerMovimientosYsaltos(15,7);
+  // console.log("movimientos completos",movimientosComplentos.saltos);
+  // console.log("Ganador",juego.verificarGanador(2));
 
   // Enviar las partidas actuales al cliente recién conectado
   socket.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
@@ -67,15 +75,15 @@ io.on('connection', (socket) => {
 
   // Unirse a partida
   socket.on('unirsePartida', ({ idPartida, nickname }) => {
-    console.log('Unirse a partida:', idPartida, 'Usuario:', nickname);
+    // console.log('Unirse a partida:', idPartida, 'Usuario:', nickname);
     if (!partidas[idPartida]) {
       console.log('Partida no encontrada:', idPartida);
       socket.emit('error', { message: 'Partida no encontrada' });
       return;
     }
-    console.log('Partidas:', partidas[idPartida]);
-    console.log('Usuarios:', partidas[idPartida].jugadores.length);
-    console.log('Cantidad de jugadores:', partidas[idPartida].cantidadJugadores);
+    // console.log('Partidas:', partidas[idPartida]);
+    // console.log('Usuarios:', partidas[idPartida].jugadores.length);
+    // console.log('Cantidad de jugadores:', partidas[idPartida].cantidadJugadores);
     if (!usuarios[socket.id]) {
       console.log('Usuario no autenticado:', socket.id);
       console.log('Usuarios:', usuarios);
@@ -92,7 +100,7 @@ io.on('connection', (socket) => {
       if (partidas[idPartida].jugadores.length === partidas[idPartida].cantidadJugadores) {
         partidas[idPartida].estado = 'completa';
         io.to(idPartida).emit('partidaCompleta', JSON.parse(JSON.stringify(sanitizePartida(partidas[idPartida]))));
-        console.log('Partida completa:', partidas[idPartida]);
+        console.log('Partida completa debería de emitir:', partidas[idPartida]);
         // Iniciar el juego
         partidas[idPartida].administrador.iniciarJuego();
         io.to(idPartida).emit('tableroActualizado', partidas[idPartida].administrador.obtenerTablero());

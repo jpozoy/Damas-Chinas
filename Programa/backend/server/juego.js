@@ -300,10 +300,11 @@ class Juego {
     }
 
     //Verificar si hay un ganador
-    obtenerGanador(jugador, destino) {
-      return Juego.posicionesPartida[destino].every(pos =>
-        this.areaJuego[pos.i][pos.j] === `${jugador}`
-      );
+    // LLamar cada vez que se mueva una ficha, recibe el jugador que movio para verificar 
+    // si realizo un movimiento ganador
+    verificarGanador(jugador) {
+      const posicionesDestino = Juego.posicionesPartida[Juego.opuestos[this.numJugadores][jugador]];
+      return posicionesDestino.every(({ i, j }) => this.areaJuego[i][j] === String(jugador));
     }
     
 
