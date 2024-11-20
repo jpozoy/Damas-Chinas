@@ -9,7 +9,7 @@ function Game() {
   const navigate = useNavigate();
   const location = useLocation();
   const [jugadores, setJugadores] = useState([]);
-  const [tablero, setTablero] = useState([]);
+  const [tablero, setTablero] = useState([]); // Inicializar como array vacío
   const [turnoActual, setTurnoActual] = useState(0);
   const [nickname, setNickname] = useState('');
   const [avatar, setAvatar] = useState('');
@@ -27,7 +27,7 @@ function Game() {
 
     socket.on('jugadoresActualizados', (data) => {
       console.log('Jugadores actualizados:', data);
-      setJugadores(data);
+      setJugadores(data.jugadores);
     });
 
     socket.on('tableroActualizado', (data) => {
@@ -58,6 +58,29 @@ function Game() {
     socket.emit('moverFicha', { idPartida, coordenadaInicial, coordenadaFinal });
   };
 
+  const getCeldaClass = (celda) => {
+    switch (celda) {
+      case '0':
+        return 'bg-white';
+      case '1':
+        return 'bg-red-500';
+      case '2':
+        return 'bg-blue-500';
+      case '3':
+        return 'bg-green-500';
+      case '4':
+        return 'bg-yellow-500';
+      case '5':
+        return 'bg-purple-500';
+      case '6':
+        return 'bg-orange-500';
+      case '_':
+        return 'invisible';
+      default:
+        return '';
+    }
+  };
+
   return (
     <div className="h-screen bg-cover bg-center relative" style={{ backgroundImage: "url('https://e1.pxfuel.com/desktop-wallpaper/123/676/desktop-wallpaper-new-version-of-agar-io-agario.jpg')" }}>
       {/* Contenedor Principal */}
@@ -68,6 +91,7 @@ function Game() {
           <img src={avatar} alt="avatar" className="w-16 h-16 rounded-full border-2" />
           <span className="text-black font-bold text-xl">{nickname}</span>
         </div>
+        
 
         {/* Botón de Regresar al Menú */}
         <button onClick={() => navigate('/')} className="absolute top-4 left-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
@@ -77,17 +101,19 @@ function Game() {
         {/* Tablero de Juego */}
         <div className="bg-gray-100 rounded-lg p-8 w-11/12 md:w-2/3 shadow-lg text-center">
           <h2 className="text-4xl font-bold">Juego de Damas Chinas</h2>
-          <div className="grid grid-cols-13 gap-1 mt-4">
-            {tablero.map((fila, i) => (
-              fila.map((celda, j) => (
-                <div
-                  key={`${i}-${j}`}
-                  className={`w-8 h-8 ${celda === 0 ? 'bg-white' : 'bg-gray-500'} border border-black`}
-                  onClick={() => handleMovimiento([i, j], [i, j])}
-                >
-                  {celda !== 0 && <span className="text-white">{celda}</span>}
-                </div>
-              ))
+          <div className="flex flex-col items-center mt-4">
+            {tablero && tablero.map((fila, i) => (
+              <div key={i} className="flex">
+                {fila.map((celda, j) => (
+                  <div
+                    key={`${i}-${j}`}
+                    className={`w-8 h-8 flex items-center justify-center border border-black ${getCeldaClass(celda)}`}
+                    onClick={() => handleMovimiento([i, j], [i, j])}
+                  >
+                    {celda !== '_' && <span className="text-white">{celda}</span>}
+                  </div>
+                ))}
+              </div>
             ))}
           </div>
         </div>

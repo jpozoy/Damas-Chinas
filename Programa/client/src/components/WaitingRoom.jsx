@@ -94,7 +94,7 @@ function WaitingRoom() {
           <h2 className="text-4xl font-bold">Sala de Espera</h2>
           <p className="text-lg text-gray-500 mt-2">Esperando a que se unan más jugadores...</p>
           <p className="text-lg text-gray-500 mt-2">Tiempo restante: {Math.floor(timeLeft / 60)}:{timeLeft % 60 < 10 ? '0' : ''}{timeLeft % 60}</p>
-          <p className="text-lg text-gray-500 mt-2">Jugadores: {console.log('Jugadores length:', jugadores.length)}{jugadores.length}/{cantidadJugadores}</p>
+          <p className="text-lg text-gray-500 mt-2">Jugadores: {jugadores.length}/{cantidadJugadores}</p>
           <ul className="mt-4">
             {jugadores.map((jugador, index) => (
               <li key={index} className="mb-2 p-2 bg-white rounded shadow">
