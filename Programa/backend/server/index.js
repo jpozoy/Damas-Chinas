@@ -21,52 +21,6 @@ const usuarios = {};
 io.on('connection', (socket) => {
   console.log('a user connected');
 
-  
-  // Pruebas de Pozo no borrar
-  const juego = new Juego(2, 6, "Normal");
-  // let movimiento = juego.buscarMovimientos(8,6);
-  juego.testBoard();
-  juego.imprimirTablero();
-  let movimientosComplentos = juego.obtenerMovimientosYsaltos(15,7);
-  console.log("movimientos completos",movimientosComplentos.saltos);
-  // let movimientos = juego.buscarMovimientos(14,7);
-  // console.log("movimientos",movimientos);
-  // let movimientosFiltrados = juego.filtrarMovimientosValidos(movimientos);
-  // console.log("movimientos filtrados",movimientosFiltrados);
-  // let saltos = juego.buscarSaltos(15,7);
-  // console.log("saltos adyacentes",saltos);
-  // let saltosProfundos = juego.getSaltosRecursivos(15,7);
-  // juego.moverFicha([15,7],[13,8]);
-  // console.log("saltos profundos",saltosProfundos);
-  // juego.imprimirTablero();
-  // console.log('a user connected');
-
-
-  // Pruebas de Joza no borrar
-    // // Emitir el tablero actual al cliente
-  // socket.emit('tablero', administrador.obtenerTablero());
-  // console.log(administrador.obtenerTablero());
-
-  // // Emitir el jugador actual
-  // socket.emit('jugadorActual', administrador.jugadores[0]);
-
-  // socket.on('disconnect', () => {
-  //   console.log('user disconnected');
-  // });
-
-  // // Manejar el evento de movimiento de ficha
-  // socket.on('moverFicha', ({ jugador, coordInicial, posicionDestino }) => {
-  //   administrador.moverFicha(jugador, coordInicial, posicionDestino);
-  //   io.emit('tablero', administrador.obtenerTablero());
-  // });
-
-  // // Manejar el evento para obtener movimientos posibles
-  // socket.on('obtenerMovimientos', ({ coordInicial }) => {
-  //   const movimientos = administrador.juego.buscarMovimientos(coordInicial[0], coordInicial[1]);
-  //   socket.emit('movimientosPosibles', movimientos);
-  // });
-
-
   // Enviar las partidas actuales al cliente recién conectado
   socket.emit('partidasActualizadas', JSON.parse(JSON.stringify(sanitizePartidas(partidas))));
 
@@ -131,11 +85,14 @@ io.on('connection', (socket) => {
     if (partidas[idPartida].jugadores.length < partidas[idPartida].cantidadJugadores) {
       partidas[idPartida].jugadores.push({ nickname, avatar: usuarios[socket.id].avatar });
       socket.join(idPartida);
-      io.to(idPartida).emit('jugadoresActualizados', JSON.parse(JSON.stringify(sanitizePartidas(partidas[idPartida].jugadores))));
+      console.log('Jugadores actualizados antes de emitir:', partidas[idPartida].jugadores);
+      console.log('Emitiendo jugadoresActualizados:', JSON.parse(JSON.stringify(sanitizePartida(partidas[idPartida].jugadores))));
+      io.to(idPartida).emit('jugadoresActualizados', JSON.parse(JSON.stringify(sanitizePartida(partidas[idPartida].jugadores))));
       console.log('Jugadores actualizados:', partidas[idPartida].jugadores);
       if (partidas[idPartida].jugadores.length === partidas[idPartida].cantidadJugadores) {
         partidas[idPartida].estado = 'completa';
         io.to(idPartida).emit('partidaCompleta', JSON.parse(JSON.stringify(sanitizePartida(partidas[idPartida]))));
+        console.log('Partida completa:', partidas[idPartida]);
         // Iniciar el juego
         partidas[idPartida].administrador.iniciarJuego();
         io.to(idPartida).emit('tableroActualizado', partidas[idPartida].administrador.obtenerTablero());
@@ -205,6 +162,8 @@ function sanitizePartida(partida) {
   if (sanitizedPartida.administrador && sanitizedPartida.administrador.juego) {
     delete sanitizedPartida.administrador.juego.areaJuego; // Eliminar cualquier otra referencia circular
   }
+  // Asegurarse de que jugadores sea un array
+  sanitizedPartida.jugadores = Array.isArray(sanitizedPartida.jugadores) ? sanitizedPartida.jugadores : (sanitizedPartida.jugadores ? Object.values(sanitizedPartida.jugadores) : []);
   return sanitizedPartida;
 }
 
