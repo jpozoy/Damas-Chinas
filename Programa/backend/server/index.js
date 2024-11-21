@@ -3,7 +3,7 @@ import http from 'http';
 import { Server } from 'socket.io';
 import Administrador from './administrador.js';
 import Juego from './juego.js';
-import { copyFileSync } from 'fs';
+import { copyFileSync, readFileSync } from 'fs'; 
 
 const app = express();
 const server = http.createServer(app);
@@ -16,6 +16,19 @@ const PORT = 3000;
 global.partidas = {}; // Almacenará las partidas activas
 
 let usuarios = {}; // Almacenará los usuarios autenticados
+
+app.get('/api/partidas', (req, res) => {
+  try {
+    const data = readFileSync('./public//partidas.json', 'utf8');
+    const partidas = JSON.parse(data);
+    res.json(partidas);
+  } catch (error) {
+    console.error('Error al leer el archivo JSON:', error);
+    res.status(500).json({ error: 'Error al leer el archivo JSON' });
+  }
+});
+;
+
 
 io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado:', socket.id);

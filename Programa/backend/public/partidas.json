@@ -1,0 +1,17 @@
+[
+    {
+      "idPartida": "partida_1",
+      "ganador": "Jugador1",
+      "creador": "Creador1"
+    },
+    {
+      "idPartida": "partida_2",
+      "ganador": "Jugador2",
+      "creador": "Creador2"
+    },
+    {
+      "idPartida": "partida_3",
+      "ganador": "Jugador3",
+      "creador": "Creador3"
+    }
+  ]
