@@ -8,6 +8,7 @@ import Ranking from './components/Ranking';
 import WaitingRoom from './components/WaitingRoom';
 import Game from './components/Game';
 import Dice from './components/Dice';
+import Stats from './components/Stats';
 
 // Crear el historial del navegador con las banderas futuras
 const history = createBrowserHistory({
@@ -26,6 +27,7 @@ function App() {
         <Route path="/waiting-room/:idPartida" element={<WaitingRoom />} />
         <Route path="/game/:idPartida" element={<Game />} />
         <Route path="/dice/:idPartida" element={<Dice />} />
+        <Route path= "/stats/:idPartida" element={<Stats />} />
       </Routes>
     </HistoryRouter>
   );

@@ -74,13 +74,17 @@ function Game() {
         }
       });
       // Verificar si la partida está completa
-      socket.emit('verificarPartidaCompleta', idPartida, (data) => {
-        if (data.error) {
-          console.error(data.error);
-        } else if (data.completa) {
-          console.log('Partida completa, redirigiendo al área de juego...');
-        }
-      });
+      // Verificar si la partida está completa
+    socket.emit('verificarEstadoPartida', idPartida, (completa) => {
+      if (completa) {
+        console.log('Partida completa, redirigiendo al área de juego...');
+        //Lógica de redirección
+        navigate(`/stats/${idPartida}`);
+      } else {
+        console.log('La partida no está completa aún.');
+      }
+    });
+    
 
       // Verificar si la partida está completa
       // verificarPartidaCompleta();

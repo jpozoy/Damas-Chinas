@@ -259,19 +259,32 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('verificarPartidaCompleta', (idPartida, callback) => {
+  socket.on('verificarEstadoPartida', (idPartida, callback) => {
     const partida = partidas[idPartida];
     if (partida) {
-      if(partida.verificarGanador()){
-        callback({ partida });
-      }
-      else{
-        callback({ partida: null });
-      }
+      callback(partida.ganador !== null);
+    } else {
+      callback(false);
+    }
+  });
+
+  socket.on('obtenerInfoPartida', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      callback({
+        idPartida: partida.juego.id,
+        creador: partida.jugadores[0].nickname,
+        ganador: partida.ganador ? partida.ganador.nickname : 'Aún no hay ganador',
+        jugadores: partida.jugadores.map(jugador => ({
+          nickname: jugador.nickname,
+          avatar: jugador.avatar
+        }))
+      });
     } else {
       callback({ error: 'Partida no encontrada' });
     }
   });
+
 
 });
 
