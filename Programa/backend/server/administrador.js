@@ -119,6 +119,8 @@ class Administrador {
   // Avanzar el indice de turno
   avanzarTurno() {
     this.turnoActual = (this.turnoActual + 1) % this.jugadores.length;
+
+    global.io.to(this.juego.id).emit('turnoActualizado', { turnoActual: this.turnoActual });
    }
 
   // Mover una ficha

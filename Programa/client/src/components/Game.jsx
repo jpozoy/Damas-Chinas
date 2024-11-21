@@ -32,21 +32,6 @@ function Game() {
       socket.emit('unirsePartida', { idPartida, nickname });
     });
 
-    socket.on('jugadoresActualizados', (data) => {
-      console.log('Jugadores actualizados recibidos:', data);
-      setJugadores(data.jugadores);
-    });
-
-    socket.on('tableroActualizado', (data) => {
-      console.log('Tablero actualizado:', data);
-      setTablero(data);
-    });
-
-    socket.on('turnoActualizado', (data) => {
-      console.log('Turno actualizado:', data);
-      setTurnoActual(data);
-    });
-
     socket.on('partidaCompleta', (data) => {
       console.log('Partida completa recibida:', data);
       // Redirigir al área de juego cuando la partida esté completa
@@ -55,7 +40,7 @@ function Game() {
 
     const intervaloTurno = setInterval(() => {
       verificarTurno();
-    }, 500); // Verificar cada 500 ms
+    }, 100); // Verificar cada 500 ms
 
     // Configuración del intervalo para obtener jugadores y tablero
     const intervalo = setInterval(() => {
@@ -77,6 +62,15 @@ function Game() {
         }
       });
 
+      // Emitir el evento 'obtenerTurno' de forma periódica
+      socket.emit('obtenerTurno', idPartida, (data) => {
+        if (data.error) {
+          console.error(data.error);
+        } else {
+          setTurnoActual(data.turnoActual);
+        }
+      });
+
       // Verificar si la partida está completa
       // verificarPartidaCompleta();
     }, 500);  // Intervalo de 500ms
@@ -85,9 +79,6 @@ function Game() {
     return () => {
       clearInterval(intervalo);  // Detener el intervalo
       clearInterval(intervaloTurno); // Detener el intervalo de turno
-      socket.off('jugadoresActualizados');
-      socket.off('tableroActualizado');
-      socket.off('turnoActualizado');
       socket.off('partidaCompleta');
     };
   }, [idPartida, location, nickname]);
@@ -105,38 +96,39 @@ function Game() {
 
   const handleMovimiento = (coordenadaFinal) => {
     if (origenSeleccionado) {
-      console.log('Moviendo ficha...',coordenadaFinal);
-      socket.emit('moverFicha', { idPartida, coordenadaInicial: origenSeleccionado, coordenadaFinal});
+      console.log('Moviendo ficha...', coordenadaFinal);
+      socket.emit('moverFicha', { idPartida, coordenadaInicial: origenSeleccionado, coordenadaFinal });
       setOrigenSeleccionado(null); // Resetear origen después del movimiento
     }
   };
+
   const handleObtenerMovimientos = (coordenadaInicial) => {
     socket.emit('obtenerMovimientosPosibles', { idPartida, coordenadaInicial }, (data) => {
-        if (data.error) {
-            console.error(data.error);
-        } else {
-            console.log('Movimientos posibles recibidos:', data.movimientos);
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        console.log('Movimientos posibles recibidos:', data.movimientos);
 
-            const movimientosValidos = data.movimientos.movimientosValidos;
-            const saltos = data.movimientos.saltos;
+        const movimientosValidos = data.movimientos.movimientosValidos;
+        const saltos = data.movimientos.saltos;
 
-            // Combinar movimientos válidos y saltos correctamente
-            const casillasResaltadas = [
-                ...movimientosValidos,
-                ...saltos.flatMap((salto) => salto), // Aplanar solo una vez
-            ];
+        // Combinar movimientos válidos y saltos correctamente
+        const casillasResaltadas = [
+          ...movimientosValidos,
+          ...saltos.flatMap((salto) => salto), // Aplanar solo una vez
+        ];
 
-            setMovimientosPosibles(casillasResaltadas);
-        }
+        setMovimientosPosibles(casillasResaltadas);
+      }
     });
-};
+  };
 
   const esMovimientoPosible = (fila, columna) => {
     return movimientosPosibles.some(
       ([movFila, movColumna]) => movFila === fila && movColumna === columna
     );
   };
-  
+
   const getCeldaClass = (celda, fila, columna) => {
     let baseClass = '';
     switch (celda) {
@@ -167,16 +159,14 @@ function Game() {
       default:
         break;
     }
-  
+
     // Añade una clase adicional si es un movimiento posible
     if (esMovimientoPosible(fila, columna)) {
       baseClass += ' border-4 border-green-500';
     }
-  
+
     return baseClass;
   };
-
-  
 
   const getJugadorColor = (index) => {
     const colores = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-orange-500'];
@@ -212,20 +202,20 @@ function Game() {
               <div key={i} className={`flex ${i % 2 === 0 ? 'ml-8' : ''}`}>
                 {fila.map((celda, j) => (
                   <button
-                  key={`${i}-${j}`}
-                  className={`relative w-8 h-8 flex items-center justify-center rounded-full border border-black ${getCeldaClass(celda, i, j)}`}
-                  onClick={() => {
-                    if (esMovimientoPosible(i, j)) {
-                      handleMovimiento([i, j]);
-                    } else if (celda !== '_') {
-                      setOrigenSeleccionado([i, j]);
-                      handleObtenerMovimientos([i, j]);
-                    }
-                  }}
-                  disabled={!esMiTurno || (!esFichaDelJugador(celda) && !esMovimientoPosible(i, j))}
-                >
-                  {celda !== '_' && <span className="text-white">{celda}</span>}
-                </button>
+                    key={`${i}-${j}`}
+                    className={`relative w-8 h-8 flex items-center justify-center rounded-full border border-black ${getCeldaClass(celda, i, j)}`}
+                    onClick={() => {
+                      if (esMovimientoPosible(i, j)) {
+                        handleMovimiento([i, j]);
+                      } else if (celda !== '_') {
+                        setOrigenSeleccionado([i, j]);
+                        handleObtenerMovimientos([i, j]);
+                      }
+                    }}
+                    disabled={!esMiTurno || (!esFichaDelJugador(celda) && !esMovimientoPosible(i, j))}
+                  >
+                    {celda !== '_' && <span className="text-white">{celda}</span>}
+                  </button>
                 ))}
               </div>
             ))}
