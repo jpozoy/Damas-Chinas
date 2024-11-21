@@ -66,7 +66,6 @@ io.on('connection', (socket) => {
   socket.on('moverFicha', ({ idPartida, coordenadaInicial, coordenadaFinal }) => {
     const partida = partidas[idPartida];
     if (partida) {
-      console.log("Me la mueve");
       partida.moverFicha(socket.id, coordenadaInicial, coordenadaFinal);
       io.to(idPartida).emit('tableroActualizado', partida.obtenerTablero());
     }

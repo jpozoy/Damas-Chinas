@@ -45,11 +45,13 @@ function Dice() {
           setOrdenJugadores(data.ordenJugadores);
           if (data.ordenJugadores.every(jugador => jugador.resultado !== undefined)) {
             setMostrarOrden(true);
-            navigate(`/game/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
+            setTimeout(() => {
+              navigate(`/game/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
+            }, 5000); // Esperar 5 segundos antes de navegar
           }
         }
       });
-    }, 1000);
+    }, 500);
 
     return () => clearInterval(intervalo);
   }, [idPartida, navigate, nickname, avatar]);
@@ -57,6 +59,10 @@ function Dice() {
   const getJugadorColor = (index) => {
     const colores = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-orange-500'];
     return colores[index % colores.length];
+  };
+
+  const getJugadorTurnoColor = () => {
+    return 'bg-teal-500';
   };
 
   const tirarDados = () => {
@@ -84,16 +90,20 @@ function Dice() {
         </div>
 
         <div className="flex w-full justify-center items-start space-x-8">
+
           {/* Orden de Jugadores */}
           {mostrarOrden ? (
-            <div className="bg-gray-100 rounded-lg p-8 w-1/4 shadow-lg text-center">
-              <h2 className="text-4xl font-bold">Orden de Jugadores</h2>
-              <ul className="text-lg text-gray-500 mt-2">
-                {ordenJugadores.map((jugador, index) => (
-                  <li key={index} className={getJugadorColor(index)}>{jugador.nickname}</li>
-                ))}
-              </ul>
-            </div>
+          <div className="bg-gray-100 rounded-lg p-12 w-112 shadow-lg text-center">
+            <h2 className="text-4xl font-bold">Orden de Jugadores</h2>
+            <ul className="text-lg text-white font-blod mt-6 space-y-4">
+              {ordenJugadores.map((jugador, index) => (
+                <li key={index} className={`flex items-center space-x-6 ${getJugadorColor(index)}`}>
+                  <img src={jugador.avatar} alt="avatar" className="w-14 h-14 rounded-full border-2" />
+                  <span>{jugador.nickname}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
           ) : (
             <>
               {/* Animación de Dados */}
@@ -110,7 +120,7 @@ function Dice() {
               {/* Jugadores */}
               <div className="flex flex-wrap justify-center gap-4">
                 {jugadores.map((jugador, index) => (
-                  <div key={index} className={`p-4 rounded-lg shadow-lg ${turnoActual === index ? getJugadorColor(index) : 'bg-white'}`}>
+                  <div key={index} className={`p-4 rounded-lg shadow-lg ${turnoActual === index ? getJugadorTurnoColor() : 'bg-white'}`}>
                     <img src={jugador.avatar} alt="avatar" className="w-16 h-16 rounded-full border-2" />
                     <span className="text-black font-bold text-xl">{jugador.nickname}</span>
                   </div>
