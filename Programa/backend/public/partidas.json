@@ -1,17 +1,27 @@
 [
-    {
-      "idPartida": "partida_1",
-      "ganador": "Jugador1",
-      "creador": "Creador1"
-    },
-    {
-      "idPartida": "partida_2",
-      "ganador": "Jugador2",
-      "creador": "Creador2"
-    },
-    {
-      "idPartida": "partida_3",
-      "ganador": "Jugador3",
-      "creador": "Creador3"
-    }
-  ]
+  {
+    "idPartida": "partida_1",
+    "ganador": "Jugador1",
+    "creador": "Creador1"
+  },
+  {
+    "idPartida": "partida_2",
+    "ganador": "Jugador2",
+    "creador": "Creador2"
+  },
+  {
+    "idPartida": "partida_3",
+    "ganador": "Jugador3",
+    "creador": "Creador3"
+  },
+  {
+    "idPartida": "partida_1732213283938",
+    "ganador": "Lezcano",
+    "creador": "Mozart"
+  },
+  {
+    "idPartida": "partida_1732213383110",
+    "ganador": "Jozafath",
+    "creador": "Jefferson"
+  }
+]
