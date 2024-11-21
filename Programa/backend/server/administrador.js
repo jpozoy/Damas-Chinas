@@ -26,7 +26,7 @@ class Administrador {
 
   // Iniciar el juego
   iniciarJuego() {
-    if (this.jugadores.length === this.juego.numJugadores) {
+    if (this.jugadores.length == this.juego.numJugadores) {
       console.log("Iniciando juego...");
       this.detenerTemporizador();
       this.juego.setAreaJuego(this.jugadores.length); // Método de prueba para inicializar o cargar el tablero
@@ -41,7 +41,7 @@ class Administrador {
     if (this.tiempoLimite > 0) {
       this.intervaloTiempo = setInterval(() => {
         this.tiempoRestante--;
-        console.log(`Tiempo restante: ${this.tiempoRestante} segundos`);
+        // console.log(`Tiempo restante: ${this.tiempoRestante} segundos`);
 
         // Emitir el tiempo restante a todos los jugadores
         this.jugadores.forEach(jugador => {
