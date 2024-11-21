@@ -142,16 +142,7 @@ class Administrador {
     }
   
     this.juego.moverFicha(coordInicial, posicionDestino);
-  
-    // Verificar si el jugador ha ganado
-    if (this.verificarGanador()) {
-      console.log("El ganador es: ", this.ganador.nickname);
-      global.io.to(this.juego.id).emit('ganador', { ganador: this.ganador.nickname });
-      this.finalizarJuego();
-    } else {
-      this.avanzarTurno();
-      global.io.to(this.juego.id).emit('tableroActualizado', this.obtenerTablero());
-    }
+    this.avanzarTurno();
   }
 }
 

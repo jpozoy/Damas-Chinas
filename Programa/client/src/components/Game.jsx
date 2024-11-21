@@ -73,6 +73,14 @@ function Game() {
           setTurnoActual(data.turnoActual);
         }
       });
+      // Verificar si la partida está completa
+      socket.emit('verificarPartidaCompleta', idPartida, (data) => {
+        if (data.error) {
+          console.error(data.error);
+        } else if (data.completa) {
+          console.log('Partida completa, redirigiendo al área de juego...');
+        }
+      });
 
       // Verificar si la partida está completa
       // verificarPartidaCompleta();
@@ -96,17 +104,6 @@ function Game() {
       }
     });
   };
-
-  const verificarVictoria = () => {
-    // Emitir la solicitud para verificar si es el turno del jugador
-    socket.emit('verificarVictoria', { idPartida, nickname }, (data) => {
-      if (data.error) {
-        console.error(data.error);
-      } else {
-        console.log('Victoria:', data.victoria);
-      }
-    });
-  }
 
   const handleMovimiento = (coordenadaFinal) => {
     if (origenSeleccionado) {

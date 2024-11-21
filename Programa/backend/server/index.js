@@ -236,20 +236,25 @@ io.on('connection', (socket) => {
     }
   });
 
-  socket.on('verificarVictoria', ({ idPartida, nickname }, callback) => {
-    const partida = partidas[idPartida];
-    if (partida) {
-      const ganador = partida.verificarVictoria(nickname);
-      callback({ ganador });
-    } else {
-      callback({ error: 'Partida no encontrada' });
-    }
-  });
 
   socket.on('obtenerOrdenJugadores', (idPartida, callback) => {
     const partida = partidas[idPartida];
     if (partida) {
       callback({ ordenJugadores: partida.jugadores });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
+  socket.on('verificarPartidaCompleta', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      if(partida.verificarGanador()){
+        callback({ partida });
+      }
+      else{
+        callback({ partida: null });
+      }
     } else {
       callback({ error: 'Partida no encontrada' });
     }
