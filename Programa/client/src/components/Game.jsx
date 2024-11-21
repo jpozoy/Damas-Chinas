@@ -57,6 +57,9 @@ function Game() {
       verificarTurno();
     }, 500); // Verificar cada 500 ms
 
+    // const intervalo = setInterval(() => { 
+
+
     // Configuración del intervalo para obtener jugadores y tablero
     const intervalo = setInterval(() => {
       // Emitir el evento 'obtenerJugadores' y manejar la respuesta
@@ -103,10 +106,22 @@ function Game() {
     });
   };
 
+  const verificarVictoria = () => {
+    // Emitir la solicitud para verificar si es el turno del jugador
+    socket.emit('verificarVictoria', { idPartida, nickname }, (data) => {
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        console.log('Victoria:', data.victoria);
+      }
+    });
+  }
+
   const handleMovimiento = (coordenadaFinal) => {
     if (origenSeleccionado) {
       console.log('Moviendo ficha...',coordenadaFinal);
       socket.emit('moverFicha', { idPartida, coordenadaInicial: origenSeleccionado, coordenadaFinal});
+      setMovimientosPosibles([]); // Limpiar movimientos posibles
       setOrigenSeleccionado(null); // Resetear origen después del movimiento
     }
   };

@@ -19,12 +19,6 @@ let usuarios = {}; // Almacenará los usuarios autenticados
 
 io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado:', socket.id);
-  let juego = new Juego(1, 2, "XD"); // Crear una nueva instancia de Juego
-  juego.testBoard(); 
-  let movimientos = juego.obtenerMovimientosYsaltos(4,5);
-  console.log('Movimientos:', movimientos);
-  // Método de prueba para inicializar o cargar el tablero
-  console.log('Juego creado:', juego);
 
   socket.on('autenticar', ({ nickname, avatar }) => {
     if (nickname && avatar) {
@@ -238,6 +232,16 @@ io.on('connection', (socket) => {
     const partida = partidas[idPartida];
     if (partida) {
       callback({ turnoActual: partida.turnoActual, dados: partida.dados });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
+  socket.on('verificarVictoria', ({ idPartida, nickname }, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      const ganador = partida.verificarVictoria(nickname);
+      callback({ ganador });
     } else {
       callback({ error: 'Partida no encontrada' });
     }

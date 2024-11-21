@@ -6,6 +6,7 @@ class Administrador {
     this.tiempoLimite = tiempoLimite; // tiempo en minutos para el modo vs tiempo
     this.jugadores = []; // lista de jugadores en la partida
     this.turnoActual = 0; // Índice del jugador actual
+    this.ganador = null; // Jugador ganador
     this.tiempoRestante = tiempoLimite * 60; // tiempo en segundos
     this.intervaloTiempo = null; // manejador del intervalo para el tiempo
     this.iniciarTemporizador(); // Iniciar el temporizador al crear la partida
@@ -30,7 +31,7 @@ class Administrador {
       console.log("Iniciando juego...");
       this.detenerTemporizador();
       this.juego.setAreaJuego(this.jugadores.length); // Método de prueba para inicializar o cargar el tablero
-      // this.juego.testBoard(); // Método de prueba para inicializar o cargar el tablero
+      this.juego.testBoard(); // Método de prueba para inicializar o cargar el tablero
     } else {
       console.log("No hay suficientes jugadores para comenzar.");
     }
@@ -121,6 +122,15 @@ class Administrador {
     this.turnoActual = (this.turnoActual + 1) % this.jugadores.length;
    }
 
+   verificarGanador() {
+    if (this.juego.verificarGanador(this.turnoActual + 1)) {
+      this.ganador = this.jugadores[this.turnoActual];
+      console.log("El ganador es: ", this.ganador.nickname);
+      return true;
+    }
+    return false;
+  }
+
   // Mover una ficha
   moverFicha(socketId, coordInicial, posicionDestino) {
     const jugador = this.jugadores.find(j => j.socketId === socketId);
@@ -128,25 +138,18 @@ class Administrador {
       console.log("Jugador no encontrado.");
       // return;
     }
+  
     this.juego.moverFicha(coordInicial, posicionDestino);
-    this.avanzarTurno();
-
-    // const movimientos = this.juego.buscarMovimientos(coordInicial[0], coordInicial[1]);
-    // const saltos = this.juego.buscarSaltos(coordInicial[0], coordInicial[1]);
-
-    // // Verificar si el movimiento es válido en los movimientos o saltos
-    // const movimientoValido = movimientos.concat(saltos).some(
-    //   (movimiento) => movimiento[0] === posicionDestino[0] && movimiento[1] === posicionDestino[1]
-    // );
-
-    // if (movimientoValido) {
-    //   console.log(`Movimiento válido realizado por ${jugador.nickname} a la posición (${posicionDestino[0]}, ${posicionDestino[1]})`);
-    //   // Actualiza el tablero en la clase Juego
-    //   this.juego.areaJuego[coordInicial[0]][coordInicial[1]] = 0; // Limpia la posición inicial
-    //   this.juego.areaJuego[posicionDestino[0]][posicionDestino[1]] = jugador.color; // Coloca la ficha del jugador en la nueva posición
-    // } else {
-    //   console.log("Movimiento inválido.");
-    // }
+  
+    // Verificar si el jugador ha ganado
+    if (this.verificarGanador()) {
+      console.log("El ganador es: ", this.ganador.nickname);
+      global.io.to(this.juego.id).emit('ganador', { ganador: this.ganador.nickname });
+      this.finalizarJuego();
+    } else {
+      this.avanzarTurno();
+      global.io.to(this.juego.id).emit('tableroActualizado', this.obtenerTablero());
+    }
   }
 }
 
