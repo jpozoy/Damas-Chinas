@@ -1,4 +1,6 @@
 import Juego from './juego.js';
+import fs from 'fs';
+import path from 'path';
 
 class Administrador {
   constructor(id, numJugadores, modoJuego, tiempoLimite) {
@@ -91,10 +93,47 @@ class Administrador {
     }
   }
 
+  // Guardar la partida en el archivo JSON
+  guardarPartida() {
+    const partidaData = {
+      idPartida: this.juego.id,
+      ganador: this.ganador ? this.ganador.nickname : 'Aún no hay ganador',
+      creador: this.jugadores[0].nickname
+    };
+
+    // Ruta escrita directamente
+    const filePath = './public/partidas.json';
+
+    fs.readFile(filePath, 'utf8', (err, data) => {
+      if (err) {
+        console.error('Error al leer el archivo JSON:', err);
+        return;
+      }
+
+      let partidas = [];
+      try {
+        partidas = JSON.parse(data);
+      } catch (err) {
+        console.error('Error al parsear el archivo JSON:', err);
+      }
+
+      partidas.push(partidaData);
+
+      fs.writeFile(filePath, JSON.stringify(partidas, null, 2), (err) => {
+        if (err) {
+          console.error('Error al escribir en el archivo JSON:', err);
+        } else {
+          console.log('Partida guardada exitosamente.');
+        }
+      });
+    });
+}
+
+
   // Mostrar los resultados de la partida
   mostrarResultados() {
     console.log("Resultados del juego:");
-    // Aquí podrías implementar lógica para mostrar al ganador, etc.
+
     this.jugadores.forEach((jugador, index) => {
       console.log(`Jugador ${index + 1}: ${jugador.nickname}`);
     });
@@ -126,6 +165,7 @@ class Administrador {
    verificarGanador() {
     if (this.juego.verificarGanador(this.turnoActual + 1)) {
       this.ganador = this.jugadores[this.turnoActual];
+      this.guardarPartida();
       console.log("El ganador es: ", this.ganador.nickname);
       return true;
     }
