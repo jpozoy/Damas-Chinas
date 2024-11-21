@@ -16,7 +16,6 @@ function Game() {
   const [movimientosPosibles, setMovimientosPosibles] = useState([]);
   const [esMiTurno, setEsMiTurno] = useState(false);
 
-
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const nicknameParam = params.get('nickname');
@@ -57,27 +56,22 @@ function Game() {
       verificarTurno();
     }, 500); // Verificar cada 500 ms
 
-
     // Configuración del intervalo para obtener jugadores y tablero
     const intervalo = setInterval(() => {
       // Emitir el evento 'obtenerJugadores' y manejar la respuesta
       socket.emit('obtenerJugadores', idPartida, (data) => {
         if (data.error) {
-          y = 0;
-          // console.error(data.error);
+          console.error(data.error);
         } else {
           setJugadores(data.jugadores);
         }
       });
 
-      
       // Emitir el evento 'obtenerTablero' de forma periódica
       socket.emit('obtenerTablero', idPartida, (data) => {
         if (data.error) {
-          y = 0;
-          // console.error(data.error);
+          console.error(data.error);
         } else {
-          // console.log('Tablero recibido:', data.tablero);
           setTablero(data.tablero);
         }
       });
@@ -85,8 +79,6 @@ function Game() {
       // Verificar si la partida está completa
       verificarPartidaCompleta();
     }, 500);  // Intervalo de 500ms
-
-    
 
     // Limpiar cuando el componente se desmonte
     return () => {
@@ -125,8 +117,6 @@ function Game() {
     });
   };
 
-  
-
   const getCeldaClass = (celda) => {
     switch (celda) {
       case '0':
@@ -155,6 +145,11 @@ function Game() {
     return colores[index % colores.length];
   };
 
+  const esFichaDelJugador = (celda) => {
+    const jugadorIndex = jugadores.findIndex(jugador => jugador.nickname === nickname) + 1;
+    return celda === jugadorIndex.toString();
+  };
+
   return (
     <div className="h-screen bg-cover bg-center relative" style={{ backgroundImage: "url('https://e1.pxfuel.com/desktop-wallpaper/123/676/desktop-wallpaper-new-version-of-agar-io-agario.jpg')" }}>
       {/* Contenedor Principal */}
@@ -166,23 +161,24 @@ function Game() {
           <span className="text-black font-bold text-xl">{nickname}</span>
         </div>
 
+        {/* Botón de Regresar al Menú */}
+        <button onClick={() => navigate('/')} className="absolute top-4 left-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
+          Regresar al Menú
+        </button>
+
         {/* Tablero de Juego */}
         <div className="bg-gray-100 rounded-lg p-8 w-11/12 md:w-2/3 shadow-lg text-center">
           <h2 className="text-4xl font-bold">Juego de Damas Chinas</h2>
           <div className="flex flex-col items-center mt-4">
             {tablero && tablero.map((fila, i) => (
-              <div key={i} className={`flex ${
-                i % 2 === 0 ? 'ml-8' : '' // Alternar el desplazamiento de las filas
-                }`}  
-              >
+              <div key={i} className={`flex ${i % 2 === 0 ? 'ml-8' : ''}`}> {/* Alternar el desplazamiento de las filas */}
                 {fila.map((celda, j) => (
                   <button
                     key={`${i}-${j}`}
-                    className={`relative w-8 h-8 flex items-center justify-center rounded-full border border-black  ${getCeldaClass(celda)}
-                                before:content-[''] before:block before:w-12 before:h-12 before:bg-transparent before:absolute before:-z-10 before:rounded-full before:border before:border-black`
-                                }
+                    className={`relative w-8 h-8 flex items-center justify-center rounded-full border border-black ${getCeldaClass(celda)}
+                                before:content-[''] before:block before:w-12 before:h-12 before:bg-transparent before:absolute before:-z-10 before:rounded-full before:border before:border-black`}
                     onClick={() => handleObtenerMovimientos([i, j])}
-                    disabled={!esMiTurno}
+                    disabled={!esMiTurno || !esFichaDelJugador(celda)}
                   >
                     {celda !== '_' && <span className="text-white">{celda}</span>}
                   </button>
@@ -191,7 +187,6 @@ function Game() {
             ))}
           </div>
         </div>
-
 
         {/* Jugadores */}
         <div className="flex flex-wrap justify-center gap-4">
