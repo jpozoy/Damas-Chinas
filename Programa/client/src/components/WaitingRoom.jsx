@@ -25,9 +25,7 @@ function WaitingRoom() {
     }
 
     console.log('Conectando al servidor de sockets...');
-    console.log('Conectando al servidor de sockets...');
     socket.on('connect', () => {
-      console.log('Esta picha llega aqui');
       console.log(`Socket ID en el frontend: ${socket.id}`);
       socket.emit('unirsePartida', { idPartida, nickname });
     });
@@ -92,8 +90,19 @@ function WaitingRoom() {
       verificarPartidaCompleta();
     }, 500);
 
+    // Configurar un intervalo para verificar si la partida ha sido cancelada cada 5 segundos
+    const intervaloCancelacion = setInterval(() => {
+      socket.emit('verificarPartidaCancelada', idPartida, (data) => {
+        if (data.cancelada) {
+          alert(data.mensaje);
+          navigate(`/?nickname=${nickname}&avatar=${avatar}`);
+        }
+      });
+    }, 500);
+
     return () => {
       clearInterval(intervalo);
+      clearInterval(intervaloCancelacion);
     };
   }, [idPartida, location, navigate, nickname, avatar]);
 

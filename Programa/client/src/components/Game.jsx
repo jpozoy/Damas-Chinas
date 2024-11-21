@@ -139,14 +139,8 @@ function Game() {
           <span className="text-black font-bold text-xl">{nickname}</span>
         </div>
 
-        {/* Botón de Regresar al Menú */}
-        <button onClick={() => navigate('/')} className="absolute top-4 left-4 bg-blue-500 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded">
-          Regresar al Menú
-        </button>
-
         {/* Tablero de Juego */}
         <div className="bg-gray-100 rounded-lg p-8 w-11/12 md:w-2/3 shadow-lg text-center">
-          <h2 className="text-4xl font-bold">Juego de Damas Chinas</h2>
           <div className="flex flex-col items-center mt-4">
             {tablero && tablero.map((fila, i) => (
               <div key={i} className="flex">

@@ -27,6 +27,7 @@ class Administrador {
   iniciarJuego() {
     if (this.jugadores.length === this.juego.numJugadores) {
       console.log("Iniciando juego...");
+      this.detenerTemporizador();
       this.juego.setAreaJuego(this.jugadores.length); // Método de prueba para inicializar o cargar el tablero
     } else {
       console.log("No hay suficientes jugadores para comenzar.");
@@ -68,7 +69,24 @@ class Administrador {
   finalizarJuego() {
     console.log("El juego ha terminado.");
     this.detenerTemporizador();
-    this.mostrarResultados();
+  
+    if (this.jugadores.length < this.juego.numJugadores) {
+      console.log("El tiempo ha terminado y el juego no ha comenzado. Eliminando la partida.");
+      this.jugadores.forEach(jugador => {
+        const socket = global.io.sockets.sockets.get(jugador.socketId);
+        if (socket) {
+          socket.emit('partidaCancelada', { mensaje: 'El tiempo ha terminado y el juego no ha comenzado.', nickname: jugador.nickname, avatar: jugador.avatar });
+        }
+      });
+  
+      if (global.partidas && global.partidas[this.juego.id]) {
+        delete global.partidas[this.juego.id];
+      } else {
+        console.error("No se pudo eliminar la partida porque no se encontró en global.partidas.");
+      }
+    } else {
+      this.mostrarResultados();
+    }
   }
 
   // Mostrar los resultados de la partida

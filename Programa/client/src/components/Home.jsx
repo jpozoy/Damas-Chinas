@@ -51,7 +51,7 @@ function Home() {
     <div className="h-screen bg-cover bg-center relative" style={{ backgroundImage: "url('https://e1.pxfuel.com/desktop-wallpaper/123/676/desktop-wallpaper-new-version-of-agar-io-agario.jpg')" }}>
       <div className="flex flex-col items-center justify-center h-full space-y-8 bg-gray-900/60 text-black">
         <div className={`bg-gray-100 rounded-lg p-8 w-11/12 md:w-1/3 shadow-lg text-center ${isAuthenticated ? 'bg-opacity-90' : ''}`}>
-          <h1 className="text-4xl font-bold">Damicelas Chinas</h1>
+          <h1 className="text-4xl font-bold">Damiselas Chinas</h1>
           {!isAuthenticated && <p className="text-lg text-gray-500 mt-2">¡Ingresa tu nickname para poder jugar!</p>}
           {isAuthenticated ? (
             <>
