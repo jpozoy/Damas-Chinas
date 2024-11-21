@@ -128,6 +128,11 @@ function Game() {
     }
   };
 
+  const getJugadorColor = (index) => {
+    const colores = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-orange-500'];
+    return colores[index % colores.length];
+  };
+
   return (
     <div className="h-screen bg-cover bg-center relative" style={{ backgroundImage: "url('https://e1.pxfuel.com/desktop-wallpaper/123/676/desktop-wallpaper-new-version-of-agar-io-agario.jpg')" }}>
       {/* Contenedor Principal */}
@@ -143,11 +148,16 @@ function Game() {
         <div className="bg-gray-100 rounded-lg p-8 w-11/12 md:w-2/3 shadow-lg text-center">
           <div className="flex flex-col items-center mt-4">
             {tablero && tablero.map((fila, i) => (
-              <div key={i} className="flex">
+              <div key={i} className={`flex ${
+                i % 2 === 0 ? 'ml-8' : '' // Alternar el desplazamiento de las filas
+                }`}  
+              >
                 {fila.map((celda, j) => (
                   <button
                     key={`${i}-${j}`}
-                    className={`w-8 h-8 flex items-center justify-center border border-black ${getCeldaClass(celda)}`}
+                    className={`relative w-8 h-8 flex items-center justify-center rounded-full border border-black  ${getCeldaClass(celda)}
+                                before:content-[''] before:block before:w-12 before:h-12 before:bg-transparent before:absolute before:-z-10 before:rounded-full before:border before:border-black`
+                                }
                     onClick={() => handleObtenerMovimientos([i, j])}
                   >
                     {celda !== '_' && <span className="text-white">{celda}</span>}
@@ -161,7 +171,7 @@ function Game() {
         {/* Jugadores */}
         <div className="flex flex-wrap justify-center gap-4">
           {jugadores.map((jugador, index) => (
-            <div key={index} className={`p-4 rounded-lg shadow-lg ${turnoActual === index ? 'bg-green-500' : 'bg-white'}`}>
+            <div key={index} className={`p-4 rounded-lg shadow-lg ${turnoActual === index ? getJugadorColor(index) : 'bg-white'}`}>
               <img src={jugador.avatar} alt="avatar" className="w-16 h-16 rounded-full border-2" />
               <span className="text-black font-bold text-xl">{jugador.nickname}</span>
             </div>
