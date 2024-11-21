@@ -2,6 +2,8 @@ import express from 'express';
 import http from 'http';
 import { Server } from 'socket.io';
 import Administrador from './administrador.js';
+import Juego from './juego.js';
+import { copyFileSync } from 'fs';
 
 const app = express();
 const server = http.createServer(app);
@@ -17,6 +19,12 @@ let usuarios = {}; // Almacenará los usuarios autenticados
 
 io.on('connection', (socket) => {
   console.log('Nuevo cliente conectado:', socket.id);
+  let juego = new Juego(1, 2, "XD"); // Crear una nueva instancia de Juego
+  juego.testBoard(); 
+  let movimientos = juego.obtenerMovimientosYsaltos(4,5);
+  console.log('Movimientos:', movimientos);
+  // Método de prueba para inicializar o cargar el tablero
+  console.log('Juego creado:', juego);
 
   socket.on('autenticar', ({ nickname, avatar }) => {
     if (nickname && avatar) {

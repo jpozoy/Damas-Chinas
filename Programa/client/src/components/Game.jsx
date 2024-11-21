@@ -108,37 +108,74 @@ function Game() {
 
   const handleObtenerMovimientos = (coordenadaInicial) => {
     socket.emit('obtenerMovimientosPosibles', { idPartida, coordenadaInicial }, (data) => {
-      if (data.error) {
-        console.error(data.error);
-      } else {
-        console.log('Movimientos posibles recibidos:', data.movimientos);
-        setMovimientosPosibles(data.movimientos);
-      }
-    });
-  };
+        if (data.error) {
+            console.error(data.error);
+        } else {
+            console.log('Movimientos posibles recibidos:', data.movimientos);
 
-  const getCeldaClass = (celda) => {
+            const movimientosValidos = data.movimientos.movimientosValidos;
+            const saltos = data.movimientos.saltos;
+
+            // Combinar movimientos válidos y saltos correctamente
+            const casillasResaltadas = [
+                ...movimientosValidos,
+                ...saltos.flatMap((salto) => salto), // Aplanar solo una vez
+            ];
+
+            setMovimientosPosibles(casillasResaltadas);
+        }
+    });
+};
+
+  
+  
+
+  const esMovimientoPosible = (fila, columna) => {
+    return movimientosPosibles.some(
+      ([movFila, movColumna]) => movFila === fila && movColumna === columna
+    );
+  };
+  
+  const getCeldaClass = (celda, fila, columna) => {
+    let baseClass = '';
     switch (celda) {
       case '0':
-        return 'bg-white';
+        baseClass = 'bg-white';
+        break;
       case '1':
-        return 'bg-red-500';
+        baseClass = 'bg-red-500';
+        break;
       case '2':
-        return 'bg-blue-500';
+        baseClass = 'bg-blue-500';
+        break;
       case '3':
-        return 'bg-green-500';
+        baseClass = 'bg-green-500';
+        break;
       case '4':
-        return 'bg-yellow-500';
+        baseClass = 'bg-yellow-500';
+        break;
       case '5':
-        return 'bg-purple-500';
+        baseClass = 'bg-purple-500';
+        break;
       case '6':
-        return 'bg-orange-500';
+        baseClass = 'bg-orange-500';
+        break;
       case '_':
-        return 'invisible';
+        baseClass = 'invisible';
+        break;
       default:
-        return '';
+        break;
     }
+  
+    // Añade una clase adicional si es un movimiento posible
+    if (esMovimientoPosible(fila, columna)) {
+      baseClass += ' border-4 border-green-500';
+    }
+  
+    return baseClass;
   };
+
+  
 
   const getJugadorColor = (index) => {
     const colores = ['bg-red-500', 'bg-blue-500', 'bg-green-500', 'bg-yellow-500', 'bg-purple-500', 'bg-orange-500'];
@@ -173,16 +210,15 @@ function Game() {
             {tablero && tablero.map((fila, i) => (
               <div key={i} className={`flex ${i % 2 === 0 ? 'ml-8' : ''}`}> {/* Alternar el desplazamiento de las filas */}
                 {fila.map((celda, j) => (
-                  <button
-                    key={`${i}-${j}`}
-                    className={`relative w-8 h-8 flex items-center justify-center rounded-full border border-black ${getCeldaClass(celda)}
-                                before:content-[''] before:block before:w-12 before:h-12 before:bg-transparent before:absolute before:-z-10 before:rounded-full before:border before:border-black`}
-                    onClick={() => handleObtenerMovimientos([i, j])}
-                    disabled={!esMiTurno || !esFichaDelJugador(celda)}
-                  >
-                    {celda !== '_' && <span className="text-white">{celda}</span>}
-                  </button>
-                ))}
+                <button
+                  key={`${i}-${j}`}
+                  className={`relative w-8 h-8 flex items-center justify-center rounded-full border border-black ${getCeldaClass(celda, i, j)}`}
+                  onClick={() => handleObtenerMovimientos([i, j])}
+                  disabled={!esMiTurno || !esFichaDelJugador(celda)}
+                >
+                  {celda !== '_' && <span className="text-white">{celda}</span>}
+                </button>
+              ))}
               </div>
             ))}
           </div>

@@ -30,6 +30,7 @@ class Administrador {
       console.log("Iniciando juego...");
       this.detenerTemporizador();
       this.juego.setAreaJuego(this.jugadores.length); // Método de prueba para inicializar o cargar el tablero
+      this.juego.testBoard(); // Método de prueba para inicializar o cargar el tablero
     } else {
       console.log("No hay suficientes jugadores para comenzar.");
     }
