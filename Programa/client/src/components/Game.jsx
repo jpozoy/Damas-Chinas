@@ -125,7 +125,6 @@ function Game() {
 
         {/* Tablero de Juego */}
         <div className="bg-gray-100 rounded-lg p-8 w-11/12 md:w-2/3 shadow-lg text-center">
-          <h2 className="text-4xl font-bold">Juego de Damas Chinas</h2>
           <div className="flex flex-col items-center mt-4">
             {tablero && tablero.map((fila, i) => (
               <div key={i} className="flex">

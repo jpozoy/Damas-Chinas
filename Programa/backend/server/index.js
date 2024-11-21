@@ -11,7 +11,8 @@ global.io = io; // Hacer io global para que pueda ser usado en administrador.js
 
 const PORT = 3000;
 
-let partidas = {}; // Almacenará las partidas activas
+global.partidas = {}; // Almacenará las partidas activas
+
 let usuarios = {}; // Almacenará los usuarios autenticados
 
 io.on('connection', (socket) => {
@@ -82,6 +83,7 @@ io.on('connection', (socket) => {
   socket.on('cancelarPartida', ({ idPartida }) => {
     const partida = partidas[idPartida];
     if (partida) {
+      partida.finalizarJuego(); // Llamar al método finalizarJuego
       io.to(idPartida).emit('partidaCancelada', { idPartida });
       delete partidas[idPartida];
       io.emit('partidasActualizadas', Object.values(partidas).map(partida => ({
@@ -141,6 +143,15 @@ io.on('connection', (socket) => {
       callback({ tablero });
     } else {
       callback({ error: 'Partida no encontrada' });
+    }
+  });
+
+  socket.on('verificarPartidaCancelada', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (!partida) {
+      callback({ cancelada: true, mensaje: 'La partida ha sido cancelada.' });
+    } else {
+      callback({ cancelada: false });
     }
   });
 
