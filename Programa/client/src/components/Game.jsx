@@ -15,6 +15,7 @@ function Game() {
   const [avatar, setAvatar] = useState('');
   const [movimientosPosibles, setMovimientosPosibles] = useState([]);
   const [esMiTurno, setEsMiTurno] = useState(false);
+  const [origenSeleccionado, setOrigenSeleccionado] = useState(null);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -77,7 +78,7 @@ function Game() {
       });
 
       // Verificar si la partida está completa
-      verificarPartidaCompleta();
+      // verificarPartidaCompleta();
     }, 500);  // Intervalo de 500ms
 
     // Limpiar cuando el componente se desmonte
@@ -102,10 +103,13 @@ function Game() {
     });
   };
 
-  const handleMovimiento = (coordenadaInicial, coordenadaFinal) => {
-    socket.emit('moverFicha', { idPartida, coordenadaInicial, coordenadaFinal, nickname });
+  const handleMovimiento = (coordenadaFinal) => {
+    if (origenSeleccionado) {
+      console.log('Moviendo ficha...',coordenadaFinal);
+      socket.emit('moverFicha', { idPartida, coordenadaInicial: origenSeleccionado, coordenadaFinal});
+      setOrigenSeleccionado(null); // Resetear origen después del movimiento
+    }
   };
-
   const handleObtenerMovimientos = (coordenadaInicial) => {
     socket.emit('obtenerMovimientosPosibles', { idPartida, coordenadaInicial }, (data) => {
         if (data.error) {
@@ -126,9 +130,6 @@ function Game() {
         }
     });
 };
-
-  
-  
 
   const esMovimientoPosible = (fila, columna) => {
     return movimientosPosibles.some(
@@ -208,17 +209,24 @@ function Game() {
           <h2 className="text-4xl font-bold">Juego de Damas Chinas</h2>
           <div className="flex flex-col items-center mt-4">
             {tablero && tablero.map((fila, i) => (
-              <div key={i} className={`flex ${i % 2 === 0 ? 'ml-8' : ''}`}> {/* Alternar el desplazamiento de las filas */}
+              <div key={i} className={`flex ${i % 2 === 0 ? 'ml-8' : ''}`}>
                 {fila.map((celda, j) => (
-                <button
+                  <button
                   key={`${i}-${j}`}
                   className={`relative w-8 h-8 flex items-center justify-center rounded-full border border-black ${getCeldaClass(celda, i, j)}`}
-                  onClick={() => handleObtenerMovimientos([i, j])}
-                  disabled={!esMiTurno || !esFichaDelJugador(celda)}
+                  onClick={() => {
+                    if (esMovimientoPosible(i, j)) {
+                      handleMovimiento([i, j]);
+                    } else if (celda !== '_') {
+                      setOrigenSeleccionado([i, j]);
+                      handleObtenerMovimientos([i, j]);
+                    }
+                  }}
+                  disabled={!esMiTurno || (!esFichaDelJugador(celda) && !esMovimientoPosible(i, j))}
                 >
                   {celda !== '_' && <span className="text-white">{celda}</span>}
                 </button>
-              ))}
+                ))}
               </div>
             ))}
           </div>
