@@ -5,6 +5,7 @@ class Administrador {
     this.juego = new Juego(id, numJugadores, modoJuego);
     this.tiempoLimite = tiempoLimite; // tiempo en minutos para el modo vs tiempo
     this.jugadores = []; // lista de jugadores en la partida
+    this.turnoActual = 0; // Índice del jugador actual
     this.tiempoRestante = tiempoLimite * 60; // tiempo en segundos
     this.intervaloTiempo = null; // manejador del intervalo para el tiempo
     this.iniciarTemporizador(); // Iniciar el temporizador al crear la partida
@@ -113,6 +114,11 @@ class Administrador {
     const [coordI, coordJ] = coordenadaInicial;
     return this.juego.obtenerMovimientosYsaltos(coordI, coordJ);
   }
+
+  // Avanzar el indice de turno
+  avanzarTurno() {
+    this.turnoActual = (this.turnoActual + 1) % this.jugadores.length;
+   }
 
   // Mover una ficha
   moverFicha(socketId, coordInicial, posicionDestino) {

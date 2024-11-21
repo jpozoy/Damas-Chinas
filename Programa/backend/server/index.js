@@ -165,6 +165,29 @@ io.on('connection', (socket) => {
     }
   });
 
+  // Escuchar el evento 'verificarTurno' desde el frontend
+  socket.on('verificarTurno', ({ idPartida, nickname }, callback) => {
+    const partida = partidas[idPartida];
+
+    if (partida) {
+      // Obtener el jugador actual en turno (puedes tener un índice o un objeto que haga referencia al jugador)
+      const jugadorActual = partida.jugadores[partida.turnoActual];
+
+      // Verificar si el jugador en turno es el que está haciendo la solicitud
+      if (jugadorActual.nickname === nickname) {
+        // Si es el turno del jugador, retornar true
+        callback({ turno: true });
+      } else {
+        // Si no es el turno del jugador, retornar false
+        callback({ turno: false });
+      }
+    } else {
+      // Si no se encuentra la partida, retornar un error
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
+
   socket.on('disconnect', () => {
     console.log('Cliente desconectado:', socket.id);
     delete usuarios[socket.id];
