@@ -24,9 +24,7 @@ function WaitingRoom() {
       setAvatar(avatarParam);
     }
 
-    console.log('Conectando al servidor de sockets...');
     socket.on('connect', () => {
-      console.log(`Socket ID en el frontend: ${socket.id}`);
       socket.emit('unirsePartida', { idPartida, nickname });
     });
 
@@ -35,7 +33,6 @@ function WaitingRoom() {
       if (data.error) {
         console.error(data.error);
       } else {
-        console.log('Creador de la partida recibido:', data);
         setCreador(data.creador);
       }
     });
@@ -45,7 +42,6 @@ function WaitingRoom() {
       if (data.error) {
         console.error(data.error);
       } else {
-        console.log('Jugadores de la partida recibidos:', data);
         setJugadores(data.jugadores);
         setCantidadJugadores(data.cantidadJugadores);
       }
@@ -57,7 +53,6 @@ function WaitingRoom() {
         if (data.error) {
           console.error(data.error);
         } else {
-          console.log('Tiempo restante recibido:', data);
           setTimeLeft(data.tiempoRestante);
         }
       });
@@ -69,8 +64,7 @@ function WaitingRoom() {
         if (data.error) {
           console.error(data.error);
         } else if (data.partidaCompleta) {
-          console.log('Partida completa recibida:', data);
-          navigate(`/game/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
+          navigate(`/dice/${idPartida}?nickname=${nickname}&avatar=${avatar}`);
         }
       });
     };
@@ -82,7 +76,6 @@ function WaitingRoom() {
         if (data.error) {
           console.error(data.error);
         } else {
-          console.log('Jugadores actualizados:', data.jugadores);
           setJugadores(data.jugadores);
           setCantidadJugadores(data.cantidadJugadores);
         }
@@ -107,7 +100,6 @@ function WaitingRoom() {
   }, [idPartida, location, navigate, nickname, avatar]);
 
   const handleCancel = () => {
-    console.log('Botón de cancelar clicado');
     socket.emit('cancelarPartida', { idPartida });
   };
 

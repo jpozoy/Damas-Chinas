@@ -193,6 +193,56 @@ io.on('connection', (socket) => {
     delete usuarios[socket.id];
     // Aquí podrías manejar la lógica para cuando un jugador se desconecta
   });
+
+  socket.on('actualizarOrdenJugadores', ({ idPartida, ordenJugadores }) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      console.log('Orden de jugadores actualizada:', ordenJugadores);
+      partida.jugadores = ordenJugadores;
+      io.to(idPartida).emit('actualizarOrdenJugadores', { ordenJugadores });
+    }
+  });
+
+  socket.on('actualizarTurno', ({ idPartida, turnoActual, dados }) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      const jugadorActual = partida.jugadores[partida.turnoActual];
+      jugadorActual.resultado = dados[0] + dados[1];
+      partida.turnoActual = turnoActual;
+      partida.dados = dados;
+
+      if (turnoActual === 0) {
+        partida.jugadores.sort((a, b) => {
+          if (a.resultado === b.resultado) {
+            return a.nickname.localeCompare(b.nickname);
+          }
+          return b.resultado - a.resultado;
+        });
+        io.to(idPartida).emit('actualizarOrdenJugadores', { ordenJugadores: partida.jugadores });
+      }
+
+      io.to(idPartida).emit('actualizarTurno', { turnoActual, dados });
+    }
+  });
+
+  socket.on('obtenerTurno', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      callback({ turnoActual: partida.turnoActual, dados: partida.dados });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
+  socket.on('obtenerOrdenJugadores', (idPartida, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      callback({ ordenJugadores: partida.jugadores });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
 });
 
 server.listen(PORT, () => {
