@@ -50,7 +50,7 @@ io.on('connection', (socket) => {
       socket.join(idPartida);
       io.to(idPartida).emit('jugadoresActualizados', { jugadores: partida.jugadores });
 
-      if (partida.jugadores.length === partida.juego.numJugadores) {
+      if (partida.jugadores.length == partida.juego.numJugadores) {
         partida.iniciarJuego();
         io.to(idPartida).emit('partidaCompleta', { idPartida });
       } else {
@@ -129,7 +129,7 @@ io.on('connection', (socket) => {
   socket.on('verificarPartidaCompleta', (idPartida, callback) => {
     const partida = partidas[idPartida];
     if (partida) {
-      const partidaCompleta = partida.jugadores.length === partida.juego.numJugadores;
+      const partidaCompleta = partida.jugadores.length == partida.juego.numJugadores;
       callback({ partidaCompleta });
     } else {
       callback({ error: 'Partida no encontrada' });
