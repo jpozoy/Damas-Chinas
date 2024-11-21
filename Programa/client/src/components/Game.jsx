@@ -14,6 +14,8 @@ function Game() {
   const [nickname, setNickname] = useState('');
   const [avatar, setAvatar] = useState('');
   const [movimientosPosibles, setMovimientosPosibles] = useState([]);
+  const [esMiTurno, setEsMiTurno] = useState(false);
+
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -51,6 +53,11 @@ function Game() {
       console.log('Partida completa, redirigiendo al área de juego...');
     });
 
+    const intervaloTurno = setInterval(() => {
+      verificarTurno();
+    }, 500); // Verificar cada 500 ms
+
+
     // Configuración del intervalo para obtener jugadores y tablero
     const intervalo = setInterval(() => {
       // Emitir el evento 'obtenerJugadores' y manejar la respuesta
@@ -63,6 +70,7 @@ function Game() {
         }
       });
 
+      
       // Emitir el evento 'obtenerTablero' de forma periódica
       socket.emit('obtenerTablero', idPartida, (data) => {
         if (data.error) {
@@ -83,12 +91,24 @@ function Game() {
     // Limpiar cuando el componente se desmonte
     return () => {
       clearInterval(intervalo);  // Detener el intervalo
+      clearInterval(intervaloTurno); // Detener el intervalo de turno
       socket.off('jugadoresActualizados');
       socket.off('tableroActualizado');
       socket.off('turnoActualizado');
       socket.off('partidaCompleta');
     };
   }, [idPartida, location, nickname]);
+
+  const verificarTurno = () => {
+    // Emitir la solicitud para verificar si es el turno del jugador
+    socket.emit('verificarTurno', { idPartida, nickname }, (data) => {
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        setEsMiTurno(data.turno);
+      }
+    });
+  };
 
   const handleMovimiento = (coordenadaInicial, coordenadaFinal) => {
     socket.emit('moverFicha', { idPartida, coordenadaInicial, coordenadaFinal, nickname });
@@ -104,6 +124,8 @@ function Game() {
       }
     });
   };
+
+  
 
   const getCeldaClass = (celda) => {
     switch (celda) {
@@ -141,6 +163,7 @@ function Game() {
 
         {/* Tablero de Juego */}
         <div className="bg-gray-100 rounded-lg p-8 w-11/12 md:w-2/3 shadow-lg text-center">
+          <h2 className="text-4xl font-bold">Juego de Damas Chinas</h2>
           <div className="flex flex-col items-center mt-4">
             {tablero && tablero.map((fila, i) => (
               <div key={i} className="flex">
@@ -149,6 +172,7 @@ function Game() {
                     key={`${i}-${j}`}
                     className={`w-8 h-8 flex items-center justify-center border border-black ${getCeldaClass(celda)}`}
                     onClick={() => handleObtenerMovimientos([i, j])}
+                    disabled={!esMiTurno}
                   >
                     {celda !== '_' && <span className="text-white">{celda}</span>}
                   </button>
@@ -157,6 +181,7 @@ function Game() {
             ))}
           </div>
         </div>
+
 
         {/* Jugadores */}
         <div className="flex flex-wrap justify-center gap-4">
