@@ -13,6 +13,7 @@ function Game() {
   const [turnoActual, setTurnoActual] = useState(0);
   const [nickname, setNickname] = useState('');
   const [avatar, setAvatar] = useState('');
+  const [movimientosPosibles, setMovimientosPosibles] = useState([]);
 
   useEffect(() => {
     const params = new URLSearchParams(location.search);
@@ -55,7 +56,8 @@ function Game() {
       // Emitir el evento 'obtenerJugadores' y manejar la respuesta
       socket.emit('obtenerJugadores', idPartida, (data) => {
         if (data.error) {
-          console.error(data.error);
+          y = 0;
+          // console.error(data.error);
         } else {
           setJugadores(data.jugadores);
         }
@@ -64,9 +66,10 @@ function Game() {
       // Emitir el evento 'obtenerTablero' de forma periódica
       socket.emit('obtenerTablero', idPartida, (data) => {
         if (data.error) {
-          console.error(data.error);
+          y = 0;
+          // console.error(data.error);
         } else {
-          console.log('Tablero recibido:', data.tablero);
+          // console.log('Tablero recibido:', data.tablero);
           setTablero(data.tablero);
         }
       });
@@ -74,6 +77,8 @@ function Game() {
       // Verificar si la partida está completa
       verificarPartidaCompleta();
     }, 500);  // Intervalo de 500ms
+
+    
 
     // Limpiar cuando el componente se desmonte
     return () => {
@@ -86,7 +91,18 @@ function Game() {
   }, [idPartida, location, nickname]);
 
   const handleMovimiento = (coordenadaInicial, coordenadaFinal) => {
-    socket.emit('moverFicha', { idPartida, coordenadaInicial, coordenadaFinal });
+    socket.emit('moverFicha', { idPartida, coordenadaInicial, coordenadaFinal, nickname });
+  };
+
+  const handleObtenerMovimientos = (coordenadaInicial) => {
+    socket.emit('obtenerMovimientosPosibles', { idPartida, coordenadaInicial }, (data) => {
+      if (data.error) {
+        console.error(data.error);
+      } else {
+        console.log('Movimientos posibles recibidos:', data.movimientos);
+        setMovimientosPosibles(data.movimientos);
+      }
+    });
   };
 
   const getCeldaClass = (celda) => {
@@ -138,7 +154,7 @@ function Game() {
                   <button
                     key={`${i}-${j}`}
                     className={`w-8 h-8 flex items-center justify-center border border-black ${getCeldaClass(celda)}`}
-                    onClick={() => handleMovimiento([i, j], [i, j])}
+                    onClick={() => handleObtenerMovimientos([i, j])}
                   >
                     {celda !== '_' && <span className="text-white">{celda}</span>}
                   </button>

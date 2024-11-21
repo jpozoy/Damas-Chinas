@@ -91,6 +91,11 @@ class Administrador {
     return this.juego.areaJuego;
   }
 
+  obtenerMovimientos(coordenadaInicial) {
+    const [coordI, coordJ] = coordenadaInicial;
+    return this.juego.obtenerMovimientosYsaltos(coordI, coordJ);
+  }
+
   // Mover una ficha
   moverFicha(socketId, coordInicial, posicionDestino) {
     const jugador = this.jugadores.find(j => j.socketId === socketId);
@@ -98,23 +103,24 @@ class Administrador {
       console.log("Jugador no encontrado.");
       return;
     }
+    this.juego.moverFicha(jugador, coordInicial, posicionDestino);
 
-    const movimientos = this.juego.buscarMovimientos(coordInicial[0], coordInicial[1]);
-    const saltos = this.juego.buscarSaltos(coordInicial[0], coordInicial[1]);
+    // const movimientos = this.juego.buscarMovimientos(coordInicial[0], coordInicial[1]);
+    // const saltos = this.juego.buscarSaltos(coordInicial[0], coordInicial[1]);
 
-    // Verificar si el movimiento es válido en los movimientos o saltos
-    const movimientoValido = movimientos.concat(saltos).some(
-      (movimiento) => movimiento[0] === posicionDestino[0] && movimiento[1] === posicionDestino[1]
-    );
+    // // Verificar si el movimiento es válido en los movimientos o saltos
+    // const movimientoValido = movimientos.concat(saltos).some(
+    //   (movimiento) => movimiento[0] === posicionDestino[0] && movimiento[1] === posicionDestino[1]
+    // );
 
-    if (movimientoValido) {
-      console.log(`Movimiento válido realizado por ${jugador.nickname} a la posición (${posicionDestino[0]}, ${posicionDestino[1]})`);
-      // Actualiza el tablero en la clase Juego
-      this.juego.areaJuego[coordInicial[0]][coordInicial[1]] = 0; // Limpia la posición inicial
-      this.juego.areaJuego[posicionDestino[0]][posicionDestino[1]] = jugador.color; // Coloca la ficha del jugador en la nueva posición
-    } else {
-      console.log("Movimiento inválido.");
-    }
+    // if (movimientoValido) {
+    //   console.log(`Movimiento válido realizado por ${jugador.nickname} a la posición (${posicionDestino[0]}, ${posicionDestino[1]})`);
+    //   // Actualiza el tablero en la clase Juego
+    //   this.juego.areaJuego[coordInicial[0]][coordInicial[1]] = 0; // Limpia la posición inicial
+    //   this.juego.areaJuego[posicionDestino[0]][posicionDestino[1]] = jugador.color; // Coloca la ficha del jugador en la nueva posición
+    // } else {
+    //   console.log("Movimiento inválido.");
+    // }
   }
 }
 

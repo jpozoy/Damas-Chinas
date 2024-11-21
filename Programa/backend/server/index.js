@@ -144,6 +144,16 @@ io.on('connection', (socket) => {
     }
   });
 
+  socket.on('obtenerMovimientosPosibles', ({ idPartida, coordenadaInicial }, callback) => {
+    const partida = partidas[idPartida];
+    if (partida) {
+      const movimientos = partida.obtenerMovimientos(coordenadaInicial);
+      callback({ movimientos });
+    } else {
+      callback({ error: 'Partida no encontrada' });
+    }
+  });
+
   socket.on('disconnect', () => {
     console.log('Cliente desconectado:', socket.id);
     delete usuarios[socket.id];
